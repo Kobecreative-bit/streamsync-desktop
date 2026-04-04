@@ -3,6 +3,7 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { store } from './store'
 import type { Product } from './store'
+import { createCheckoutSession, createBillingPortalSession } from './stripe'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -193,6 +194,27 @@ function setupIPC(): void {
     const updated = { ...current, ...settings }
     store.set('settings', updated)
     return updated
+  })
+
+  ipcMain.handle('create-checkout-session', async (_event, params: { priceId: string; customerId?: string; email: string; successUrl?: string; cancelUrl?: string }) => {
+    const url = await createCheckoutSession(params)
+    if (url) shell.openExternal(url)
+    return url
+  })
+
+  ipcMain.handle('create-billing-portal', async (_event, customerId: string) => {
+    const url = await createBillingPortalSession(customerId)
+    if (url) shell.openExternal(url)
+    return url
+  })
+
+  ipcMain.handle('get-selected-platforms', () => {
+    return store.get('selectedPlatforms', ['tiktok', 'youtube', 'instagram', 'facebook'])
+  })
+
+  ipcMain.handle('set-selected-platforms', (_event, platforms: string[]) => {
+    store.set('selectedPlatforms', platforms)
+    return platforms
   })
 }
 

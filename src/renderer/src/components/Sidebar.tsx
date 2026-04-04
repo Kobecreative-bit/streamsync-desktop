@@ -1,3 +1,7 @@
+import { useAuthStore } from '../stores/authStore'
+import { usePlanStore } from '../stores/planStore'
+import { PLAN_FEATURES } from '../lib/planConfig'
+
 interface SidebarProps {
   currentPage: string
   onNavigate: (page: string) => void
@@ -13,7 +17,22 @@ const navItems = [
   { id: 'settings', label: 'Settings', icon: SettingsIcon }
 ]
 
+const planBadgeColors: Record<string, string> = {
+  starter: 'bg-white/10 text-text-secondary',
+  pro: 'bg-accent/15 text-accent',
+  enterprise: 'bg-purple-500/15 text-purple-400'
+}
+
 function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element {
+  const { profile } = useAuthStore()
+  const { plan } = usePlanStore()
+
+  const displayName = profile?.display_name || 'User'
+  const displayEmail = profile?.email || ''
+  const initial = displayName.charAt(0).toUpperCase()
+  const planLabel = PLAN_FEATURES[plan].label
+  const badgeClass = planBadgeColors[plan] || planBadgeColors.starter
+
   return (
     <div
       className="w-60 bg-bg-secondary flex flex-col border-r border-white/5"
@@ -56,6 +75,36 @@ function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element
         })}
       </nav>
 
+      {/* Upgrade banner for non-enterprise users */}
+      {plan !== 'enterprise' && (
+        <div
+          className="mx-3 mb-3"
+          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+        >
+          <button
+            onClick={() => onNavigate('settings')}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-accent/5 border border-accent/10 hover:bg-accent/10 transition-colors group"
+          >
+            <svg
+              className="w-4 h-4 text-accent shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <span className="text-xs font-medium text-accent">
+              Upgrade to {plan === 'starter' ? 'Pro' : 'Enterprise'}
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* User */}
       <div
         className="p-4 border-t border-white/5"
@@ -63,11 +112,18 @@ function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
-            K
+            {initial}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-text-primary">Kobe</p>
-            <p className="text-xs text-text-secondary">Pro Trial</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-text-primary truncate">{displayName}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-semibold rounded ${badgeClass}`}>
+                {planLabel}
+              </span>
+              {displayEmail && (
+                <p className="text-[10px] text-text-secondary truncate">{displayEmail}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

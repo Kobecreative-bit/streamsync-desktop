@@ -1,21 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import Sidebar from './components/Sidebar'
+import AuthGuard from './components/AuthGuard'
 import Dashboard from './pages/Dashboard'
 import GoLive from './pages/GoLive'
 import Products from './pages/Products'
 import Analytics from './pages/Analytics'
 import Replays from './pages/Replays'
 import Settings from './pages/Settings'
+import Billing from './pages/Billing'
+import TeamManagement from './pages/TeamManagement'
+import ShopifyConnect from './pages/ShopifyConnect'
+import ComplianceReporting from './pages/ComplianceReporting'
+import WhiteLabel from './pages/WhiteLabel'
+import { useAppStore } from './stores/appStore'
 
-function App(): JSX.Element {
-  const [currentPage, setCurrentPage] = useState<string>('dashboard')
-  const [isLive, setIsLive] = useState(false)
+function AppContent(): JSX.Element {
+  const { currentPage, setCurrentPage, isLive, setIsLive } = useAppStore()
 
   useEffect(() => {
     window.streamSync?.onNavigate((page: string) => {
       setCurrentPage(page)
     })
-  }, [])
+  }, [setCurrentPage])
 
   const renderPage = (): JSX.Element => {
     switch (currentPage) {
@@ -29,6 +35,16 @@ function App(): JSX.Element {
         return <Replays />
       case 'settings':
         return <Settings />
+      case 'billing':
+        return <Billing />
+      case 'team':
+        return <TeamManagement />
+      case 'shopify':
+        return <ShopifyConnect />
+      case 'compliance':
+        return <ComplianceReporting />
+      case 'whitelabel':
+        return <WhiteLabel />
       default:
         return <Dashboard onNavigate={setCurrentPage} />
     }
@@ -43,6 +59,14 @@ function App(): JSX.Element {
       />
       <main className="flex-1 overflow-hidden">{renderPage()}</main>
     </div>
+  )
+}
+
+function App(): JSX.Element {
+  return (
+    <AuthGuard>
+      <AppContent />
+    </AuthGuard>
   )
 }
 

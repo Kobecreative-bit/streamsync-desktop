@@ -4,8 +4,10 @@ import StreamControls from '../components/StreamControls'
 import CommentPanel from '../components/CommentPanel'
 import AICopilot from '../components/AIcopilot'
 import ProductModal from '../components/ProductModal'
-import { generateFakeComment } from '../lib/commentScraper'
-import { detectBuyingSignal, generateSuggestedReply } from '../lib/aiCopilot'
+import { generateDemoComment } from '../lib/commentScraper'
+import { scrapeComments, type Platform } from '../lib/scrapers'
+import { analyzeBuyingSignal, generateContextReply } from '../lib/buyingSignalEngine'
+import { sendReply } from '../lib/replyInjector'
 
 interface GoLiveProps {
   isLive: boolean
@@ -14,6 +16,8 @@ interface GoLiveProps {
 
 type RightTab = 'comments' | 'products' | 'ai'
 
+const PLATFORMS: Platform[] = ['tiktok', 'youtube', 'instagram', 'facebook']
+
 function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
   const [comments, setComments] = useState<Comment[]>([])
   const [alerts, setAlerts] = useState<BuyingSignalAlert[]>([])
@@ -21,8 +25,19 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
   const [viewerCount, setViewerCount] = useState(0)
   const [rightTab, setRightTab] = useState<RightTab>('comments')
   const [showProductModal, setShowProductModal] = useState(false)
-  const commentIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [isDemoMode, setIsDemoMode] = useState(false)
+  const scrapeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const demoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const viewerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const webviewRefs = useRef<Record<Platform, Electron.WebviewTag | null>>({
+    tiktok: null,
+    youtube: null,
+    instagram: null,
+    facebook: null
+  })
+  const seenCommentsRef = useRef<Set<string>>(new Set())
+  const emptyScrapeCyclesRef = useRef(0)
+  const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const pinnedProduct = products.find((p) => p.pinned) || null
 
@@ -36,26 +51,148 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
     window.streamSync.onProductsUpdated(() => loadProducts())
   }, [loadProducts])
 
+  const handleWebviewReady = useCallback((webview: Electron.WebviewTag, platform: Platform) => {
+    webviewRefs.current[platform] = webview
+  }, [])
+
+  /** Compute a dedup key for a comment */
+  const commentKey = (user: string, text: string, platform: string): string => {
+    return `${platform}:${user}:${text}`
+  }
+
+  /** Run one scrape cycle across all platform webviews */
+  const runScrapeCycle = useCallback(async () => {
+    let totalScraped = 0
+
+    for (const platform of PLATFORMS) {
+      const webview = webviewRefs.current[platform]
+      if (!webview) continue
+
+      try {
+        const scraped = await scrapeComments(webview, platform)
+        for (const raw of scraped) {
+          const key = commentKey(raw.user, raw.text, platform)
+          if (seenCommentsRef.current.has(key)) continue
+          seenCommentsRef.current.add(key)
+
+          const signal = analyzeBuyingSignal(raw.text)
+          const comment: Comment = {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+            user: raw.user,
+            text: raw.text,
+            platform,
+            timestamp: Date.now(),
+            isBuyingSignal: signal.isSignal
+          }
+
+          setComments((prev) => [...prev.slice(-100), comment])
+          totalScraped++
+
+          if (signal.isSignal) {
+            const primarySignal = signal.matchedPatterns[0] || 'purchase intent'
+            const productForReply = pinnedProduct
+              ? { name: pinnedProduct.name, price: pinnedProduct.price, buyLink: pinnedProduct.buyLink }
+              : null
+            const reply = generateContextReply(comment.user, productForReply, primarySignal)
+
+            const alert: BuyingSignalAlert = {
+              id: comment.id,
+              comment,
+              suggestedReply: reply,
+              confidence: signal.confidence,
+              matchedPatterns: signal.matchedPatterns,
+              sent: false,
+              sendStatus: 'idle'
+            }
+            setAlerts((prev) => [alert, ...prev.slice(0, 49)])
+          }
+        }
+      } catch {
+        // Scraping failed for this platform, continue with others
+      }
+    }
+
+    return totalScraped
+  }, [pinnedProduct])
+
+  /** Start demo mode fallback that generates simulated comments */
+  const startDemoMode = useCallback(() => {
+    if (demoIntervalRef.current) return
+    setIsDemoMode(true)
+
+    demoIntervalRef.current = setInterval(() => {
+      const comment = generateDemoComment()
+
+      const signal = analyzeBuyingSignal(comment.text)
+      comment.isBuyingSignal = signal.isSignal
+
+      setComments((prev) => [...prev.slice(-100), comment])
+
+      if (signal.isSignal) {
+        const primarySignal = signal.matchedPatterns[0] || 'purchase intent'
+        const productForReply = pinnedProduct
+          ? { name: pinnedProduct.name, price: pinnedProduct.price, buyLink: pinnedProduct.buyLink }
+          : null
+        const reply = generateContextReply(comment.user, productForReply, primarySignal)
+
+        const alert: BuyingSignalAlert = {
+          id: comment.id,
+          comment,
+          suggestedReply: reply,
+          confidence: signal.confidence,
+          matchedPatterns: signal.matchedPatterns,
+          sent: false,
+          sendStatus: 'idle'
+        }
+        setAlerts((prev) => [alert, ...prev.slice(0, 49)])
+      }
+    }, 2000 + Math.random() * 3000)
+  }, [pinnedProduct])
+
+  const stopDemoMode = useCallback(() => {
+    if (demoIntervalRef.current) {
+      clearInterval(demoIntervalRef.current)
+      demoIntervalRef.current = null
+    }
+    setIsDemoMode(false)
+  }, [])
+
   const handleGoLive = (): void => {
     setIsLive(true)
     setComments([])
     setAlerts([])
     setViewerCount(0)
+    seenCommentsRef.current.clear()
+    emptyScrapeCyclesRef.current = 0
 
-    commentIntervalRef.current = setInterval(() => {
-      const comment = generateFakeComment()
-      setComments((prev) => [...prev.slice(-100), comment])
-
-      if (detectBuyingSignal(comment.text)) {
-        const alert: BuyingSignalAlert = {
-          id: comment.id,
-          comment,
-          suggestedReply: generateSuggestedReply(comment.user),
-          sent: false
+    // Start scraping every 3 seconds
+    scrapeIntervalRef.current = setInterval(async () => {
+      const count = await runScrapeCycle()
+      if (count === 0) {
+        emptyScrapeCyclesRef.current++
+      } else {
+        emptyScrapeCyclesRef.current = 0
+        // If we were in demo mode and real comments start coming, switch back
+        if (isDemoMode) {
+          stopDemoMode()
         }
-        setAlerts((prev) => [alert, ...prev.slice(0, 49)])
       }
-    }, 2000 + Math.random() * 3000)
+    }, 3000)
+
+    // After 10 seconds (roughly 3 empty cycles), fall back to demo mode
+    demoFallbackTimerRef.current = setTimeout(() => {
+      if (emptyScrapeCyclesRef.current >= 3) {
+        startDemoMode()
+      }
+      // Keep checking periodically
+      const checkInterval = setInterval(() => {
+        if (emptyScrapeCyclesRef.current >= 3 && !demoIntervalRef.current) {
+          startDemoMode()
+        }
+      }, 10000)
+      // Store for cleanup
+      demoFallbackTimerRef.current = checkInterval as unknown as ReturnType<typeof setTimeout>
+    }, 10000)
 
     viewerIntervalRef.current = setInterval(() => {
       setViewerCount((prev) => prev + Math.floor(Math.random() * 5) + 1)
@@ -64,21 +201,55 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
 
   const handleEndStream = (): void => {
     setIsLive(false)
-    if (commentIntervalRef.current) clearInterval(commentIntervalRef.current)
+    if (scrapeIntervalRef.current) clearInterval(scrapeIntervalRef.current)
     if (viewerIntervalRef.current) clearInterval(viewerIntervalRef.current)
+    if (demoFallbackTimerRef.current) clearInterval(demoFallbackTimerRef.current as unknown as ReturnType<typeof setInterval>)
+    stopDemoMode()
+    scrapeIntervalRef.current = null
+    viewerIntervalRef.current = null
+    demoFallbackTimerRef.current = null
   }
 
   useEffect(() => {
     return () => {
-      if (commentIntervalRef.current) clearInterval(commentIntervalRef.current)
+      if (scrapeIntervalRef.current) clearInterval(scrapeIntervalRef.current)
       if (viewerIntervalRef.current) clearInterval(viewerIntervalRef.current)
+      if (demoIntervalRef.current) clearInterval(demoIntervalRef.current)
+      if (demoFallbackTimerRef.current) clearInterval(demoFallbackTimerRef.current as unknown as ReturnType<typeof setInterval>)
     }
   }, [])
 
-  const handleSendReply = (alertId: string): void => {
+  const handleSendReply = async (alertId: string): Promise<void> => {
+    const alert = alerts.find((a) => a.id === alertId)
+    if (!alert || alert.sent) return
+
+    const platform = alert.comment.platform
+    const webview = webviewRefs.current[platform]
+
+    // Mark as sending
     setAlerts((prev) =>
-      prev.map((a) => (a.id === alertId ? { ...a, sent: true } : a))
+      prev.map((a) => (a.id === alertId ? { ...a, sendStatus: 'sending' as const } : a))
     )
+
+    if (webview && !isDemoMode) {
+      const success = await sendReply(webview, platform, alert.suggestedReply)
+      setAlerts((prev) =>
+        prev.map((a) =>
+          a.id === alertId
+            ? { ...a, sent: success, sendStatus: success ? 'success' as const : 'failed' as const }
+            : a
+        )
+      )
+    } else {
+      // Demo mode: simulate successful send
+      setTimeout(() => {
+        setAlerts((prev) =>
+          prev.map((a) =>
+            a.id === alertId ? { ...a, sent: true, sendStatus: 'success' as const } : a
+          )
+        )
+      }, 500)
+    }
   }
 
   const handleAddProduct = async (product: Omit<Product, 'id' | 'pinned'>): Promise<void> => {
@@ -118,10 +289,15 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
       <div className="flex-1 flex overflow-hidden">
         {/* Stream Panels - horizontal row of vertical phone panels */}
         <div className="flex-1 flex gap-3 p-3 overflow-x-auto items-stretch">
-          <StreamPanel platform="tiktok" pinnedProduct={pinnedProduct} isLive={isLive} />
-          <StreamPanel platform="youtube" pinnedProduct={pinnedProduct} isLive={isLive} />
-          <StreamPanel platform="instagram" pinnedProduct={pinnedProduct} isLive={isLive} />
-          <StreamPanel platform="facebook" pinnedProduct={pinnedProduct} isLive={isLive} />
+          {PLATFORMS.map((platform) => (
+            <StreamPanel
+              key={platform}
+              platform={platform}
+              pinnedProduct={pinnedProduct}
+              isLive={isLive}
+              onWebviewReady={handleWebviewReady}
+            />
+          ))}
         </div>
 
         {/* Right Sidebar Panel - 320px with tabs */}
@@ -146,6 +322,13 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
               </button>
             ))}
           </div>
+
+          {/* Demo mode indicator */}
+          {isLive && isDemoMode && rightTab === 'comments' && (
+            <div className="px-3 py-1.5 bg-white/[0.02] border-b border-white/5">
+              <span className="text-[10px] text-text-secondary">(Demo) Simulated comments -- log into platforms for real data</span>
+            </div>
+          )}
 
           {/* Tab Content */}
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -213,7 +396,7 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
             )}
 
             {rightTab === 'ai' && (
-              <AICopilot isLive={isLive} alerts={alerts} onSendReply={handleSendReply} />
+              <AICopilot isLive={isLive} alerts={alerts} onSendReply={handleSendReply} isDemoMode={isDemoMode} />
             )}
           </div>
         </div>

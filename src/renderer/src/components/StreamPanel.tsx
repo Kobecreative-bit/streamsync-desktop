@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Platform } from '../lib/scrapers'
 
 interface StreamPanelProps {
-  platform: 'tiktok' | 'youtube' | 'instagram' | 'facebook'
+  platform: Platform
   pinnedProduct: Product | null
   isLive: boolean
+  onWebviewReady?: (webview: Electron.WebviewTag, platform: Platform) => void
 }
 
 const PLATFORM_CONFIG = {
@@ -45,7 +47,7 @@ function getCategoryIcon(iconId: string): JSX.Element {
   }
 }
 
-function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX.Element {
+function StreamPanel({ platform, pinnedProduct, isLive, onWebviewReady }: StreamPanelProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -77,6 +79,9 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
 
     webview.addEventListener('did-stop-loading', () => {
       setLoading(false)
+      if (onWebviewReady) {
+        onWebviewReady(webview, platform)
+      }
     })
 
     webview.addEventListener('did-fail-load', () => {
@@ -104,7 +109,7 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
         container.removeChild(webview)
       }
     }
-  }, [platform, config.url])
+  }, [platform, config.url, onWebviewReady])
 
   const handleRetry = (): void => {
     setError(null)

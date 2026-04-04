@@ -63,7 +63,38 @@ interface BuyingSignalAlert {
   id: string
   comment: Comment
   suggestedReply: string
+  confidence: number
+  matchedPatterns: string[]
   sent: boolean
+  sendStatus?: 'idle' | 'sending' | 'success' | 'failed'
+}
+
+// Auth and plan types
+type PlanTier = 'starter' | 'pro' | 'enterprise'
+
+interface UserProfile {
+  id: string
+  email: string
+  display_name: string
+  plan: PlanTier
+  team_id: string | null
+}
+
+interface UpgradeModalState {
+  isOpen: boolean
+  feature: string
+  currentPlan: PlanTier
+  requiredPlan: PlanTier
+}
+
+// Vite env vars
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }
 
 declare global {

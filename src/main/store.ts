@@ -4,6 +4,7 @@ interface StoreSchema {
   products: Product[]
   streamState: StreamState
   settings: AppSettings
+  selectedPlatforms: string[]
 }
 
 interface Product {

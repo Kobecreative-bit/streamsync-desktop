@@ -18,8 +18,10 @@
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.27",
     "electron": "^41.1.1",
@@ -33,6 +35,15 @@
     "vite": "^8.0.3"
   },
   "dependencies": {
-    "electron-store": "^11.0.2"
+    "@stripe/stripe-js": "^9.0.1",
+    "@supabase/supabase-js": "^2.101.1",
+    "date-fns": "^4.1.0",
+    "electron-store": "^11.0.2",
+    "papaparse": "^5.5.3",
+    "react-is": "^19.2.4",
+    "recharts": "^3.8.1",
+    "stripe": "^22.0.0",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.12"
   }
 }
