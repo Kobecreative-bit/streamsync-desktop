@@ -24,7 +24,11 @@ function CommentPanel({ comments }: CommentPanelProps): JSX.Element {
     return (
       <div className="flex-1 flex items-center justify-center text-center p-6">
         <div>
-          <div className="text-4xl mb-3">💬</div>
+          <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
+            <svg className="w-6 h-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
           <p className="text-text-secondary text-sm">Comments will appear here when you go live</p>
         </div>
       </div>
@@ -37,7 +41,9 @@ function CommentPanel({ comments }: CommentPanelProps): JSX.Element {
         <div
           key={comment.id}
           className={`p-2.5 rounded-lg transition-all ${
-            comment.isBuyingSignal ? 'bg-accent/10 border border-accent/20' : 'bg-white/3 hover:bg-white/5'
+            comment.isBuyingSignal
+              ? 'bg-accent/5 border-l-2 border-l-accent border border-accent/10'
+              : 'bg-white/[0.02] hover:bg-white/[0.04]'
           }`}
         >
           <div className="flex items-center gap-2 mb-1">
@@ -51,15 +57,18 @@ function CommentPanel({ comments }: CommentPanelProps): JSX.Element {
             <span
               className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
               style={{
-                backgroundColor: PLATFORM_COLORS[comment.platform] + '20',
+                backgroundColor: PLATFORM_COLORS[comment.platform] + '15',
                 color: PLATFORM_COLORS[comment.platform]
               }}
             >
               {comment.platform}
             </span>
             {comment.isBuyingSignal && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent font-bold shrink-0">
-                🔥 BUYING
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/15 text-accent font-semibold shrink-0 flex items-center gap-1">
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                SIGNAL
               </span>
             )}
           </div>

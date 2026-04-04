@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import GoLive from './pages/GoLive'
 import Products from './pages/Products'
 import Analytics from './pages/Analytics'
+import Replays from './pages/Replays'
 import Settings from './pages/Settings'
 
 function App(): JSX.Element {
@@ -25,17 +26,7 @@ function App(): JSX.Element {
       case 'analytics':
         return <Analytics />
       case 'replays':
-        return (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🎬</div>
-              <h2 className="text-2xl font-bold text-text-primary mb-2">Replays</h2>
-              <p className="text-text-secondary">
-                Replays are automatically saved after each live stream
-              </p>
-            </div>
-          </div>
-        )
+        return <Replays />
       case 'settings':
         return <Settings />
       default:

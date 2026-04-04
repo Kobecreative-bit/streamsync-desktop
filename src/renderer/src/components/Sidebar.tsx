@@ -15,17 +15,26 @@ const navItems = [
 
 function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element {
   return (
-    <div className="w-60 bg-bg-secondary flex flex-col border-r border-white/5" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
+    <div
+      className="w-60 bg-bg-secondary flex flex-col border-r border-white/5"
+      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+    >
       {/* Logo */}
       <div className="h-14 flex items-center px-5 gap-3 mt-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
-          S
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center">
+          <svg className="w-4.5 h-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
         </div>
         <span className="font-bold text-lg text-text-primary tracking-tight">StreamSync</span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 mt-4 space-y-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+      <nav
+        className="flex-1 px-3 mt-4 space-y-1"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
         {navItems.map((item) => {
           const active = currentPage === item.id
           return (
@@ -48,7 +57,10 @@ function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element
       </nav>
 
       {/* User */}
-      <div className="p-4 border-t border-white/5" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+      <div
+        className="p-4 border-t border-white/5"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+      >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
             K

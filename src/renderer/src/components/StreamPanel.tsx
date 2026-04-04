@@ -16,6 +16,35 @@ const PLATFORM_CONFIG = {
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
 
+function getCategoryIcon(iconId: string): JSX.Element {
+  switch (iconId) {
+    case 'shirt':
+      return (
+        <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.115 5.19l.319 1.913A6 6 0 0012 12a6 6 0 005.566-4.897l.319-1.913M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" />
+        </svg>
+      )
+    case 'tech':
+      return (
+        <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      )
+    case 'beauty':
+      return (
+        <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+        </svg>
+      )
+    default:
+      return (
+        <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      )
+  }
+}
+
 function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
@@ -27,7 +56,6 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
     const container = containerRef.current
     if (!container) return
 
-    // Clear any existing webview
     const existing = container.querySelector('webview')
     if (existing) {
       container.removeChild(existing)
@@ -51,7 +79,7 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
       setLoading(false)
     })
 
-    webview.addEventListener('did-fail-load', (_e) => {
+    webview.addEventListener('did-fail-load', () => {
       setLoading(false)
       setError('Failed to load. Check your connection.')
     })
@@ -91,8 +119,11 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
 
   return (
     <div className="flex flex-col bg-bg-card rounded-2xl border border-white/5 overflow-hidden flex-1 min-w-[220px] max-w-[320px]">
-      {/* Phone notch header */}
-      <div className="h-10 flex items-center justify-between px-3 shrink-0" style={{ backgroundColor: config.color + '15' }}>
+      {/* Header */}
+      <div
+        className="h-10 flex items-center justify-between px-3 shrink-0"
+        style={{ backgroundColor: config.color + '10' }}
+      >
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.color }} />
           <span className="text-xs font-bold text-text-primary">{config.name}</span>
@@ -113,10 +144,13 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
         </div>
       </div>
 
-      {/* Webview Container — tall vertical phone shape */}
+      {/* Webview Container */}
       <div className="flex-1 relative min-h-0" ref={containerRef}>
         {error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/90 z-10 p-4">
+            <svg className="w-8 h-8 text-text-secondary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
             <p className="text-text-secondary text-xs text-center mb-3">{error}</p>
             <button
               onClick={handleRetry}
@@ -129,22 +163,24 @@ function StreamPanel({ platform, pinnedProduct, isLive }: StreamPanelProps): JSX
 
         {/* Product Overlay */}
         {pinnedProduct && isLive && (
-          <div className="absolute bottom-2 left-2 right-2 z-20 bg-bg-card/95 backdrop-blur-sm rounded-lg border border-white/10 p-2 animate-slideUp">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{pinnedProduct.emoji || '🛍️'}</span>
+          <div className="absolute bottom-2 left-2 right-2 z-20 bg-bg-card/95 backdrop-blur-sm rounded-lg border border-white/10 p-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
+                {getCategoryIcon(pinnedProduct.emoji)}
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-text-primary truncate">{pinnedProduct.name}</p>
                 <p className="text-accent text-xs font-bold">${pinnedProduct.price.toFixed(2)}</p>
               </div>
             </div>
-            <button className="w-full mt-1.5 py-1 bg-accent rounded-md text-white text-[10px] font-bold hover:bg-accent/80 transition-colors">
+            <button className="w-full mt-2 py-1.5 bg-accent rounded-md text-white text-[10px] font-bold hover:bg-accent/80 transition-colors">
               Buy Now
             </button>
           </div>
         )}
       </div>
 
-      {/* Bottom bar — platform status */}
+      {/* Bottom Status Bar */}
       <div className="h-8 flex items-center justify-center shrink-0 border-t border-white/5">
         {isLive ? (
           <div className="flex items-center gap-1.5">
