@@ -16,3 +16,4 @@ win:
 linux:
   target: [AppImage, deb]
   category: Video
+  maintainer: hello@streamsync.live
