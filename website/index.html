@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSync — Go Live Everywhere. Sell Anything.</title>
+  <meta name="description" content="StreamSync lets you go live on TikTok, YouTube, Instagram, and Facebook simultaneously with AI-powered selling tools. Download free for Mac, Windows, and Linux." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23f97316'/><text x='50' y='72' font-size='60' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>S</text></svg>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a1f35;
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --tiktok: #ff0050;
+      --youtube: #ff0000;
+      --instagram: #e1306c;
+      --facebook: #1877f2;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ---- NAV ---- */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10, 14, 26, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 20px;
+    }
+    .nav-logo-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 16px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 14px; color: var(--text-secondary); font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 24px; border-radius: 10px;
+      font-weight: 700; font-size: 14px;
+      transition: all 0.2s; border: none; cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent); color: white;
+      box-shadow: 0 4px 24px rgba(249, 115, 22, 0.3);
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05); color: var(--text-primary);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .btn-large { padding: 14px 32px; font-size: 16px; border-radius: 12px; }
+
+    /* ---- HERO ---- */
+    .hero {
+      padding: 160px 24px 100px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(249,115,22,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 100px;
+      background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.2);
+      font-size: 13px; color: var(--accent); font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, #f97316, #fb923c, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 18px; color: var(--text-secondary);
+      max-width: 560px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-buttons {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .hero-platforms {
+      display: flex; gap: 24px; justify-content: center; align-items: center;
+      margin-bottom: 60px;
+    }
+    .hero-platform {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text-secondary); font-weight: 500;
+    }
+    .hero-platform .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    /* ---- APP PREVIEW ---- */
+    .app-preview {
+      max-width: 1100px; margin: 0 auto;
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-secondary);
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .app-preview-bar {
+      height: 40px; background: var(--bg-card);
+      display: flex; align-items: center; padding: 0 16px; gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .app-preview-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .app-preview-content {
+      display: flex; height: 500px;
+    }
+    .app-preview-sidebar {
+      width: 200px; background: var(--bg-secondary);
+      border-right: 1px solid rgba(255,255,255,0.05);
+      padding: 20px 12px;
+    }
+    .app-preview-sidebar .logo {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 800; font-size: 14px; margin-bottom: 24px;
+    }
+    .app-preview-sidebar .logo-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 900; font-size: 12px;
+    }
+    .sidebar-item {
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      color: var(--text-secondary); margin-bottom: 2px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-item.active {
+      background: rgba(249,115,22,0.1); color: var(--accent);
+    }
+    .sidebar-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .app-preview-main { flex: 1; display: flex; gap: 8px; padding: 8px; overflow: hidden; }
+    .phone-panel {
+      flex: 1; border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .phone-header {
+      height: 32px; display: flex; align-items: center; padding: 0 10px; gap: 6px;
+      font-size: 11px; font-weight: 700;
+    }
+    .phone-header .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .phone-body {
+      flex: 1; background: var(--bg-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .phone-footer {
+      height: 24px; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 600; color: #22c55e; gap: 4px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .phone-footer .live-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: #22c55e; animation: pulse 1.5s infinite;
+    }
+    .app-preview-panel {
+      width: 240px; background: var(--bg-secondary);
+      border-left: 1px solid rgba(255,255,255,0.05);
+      padding: 12px; overflow: hidden;
+    }
+    .panel-tabs {
+      display: flex; border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 12px;
+    }
+    .panel-tab {
+      flex: 1; padding: 8px 0; font-size: 10px; font-weight: 600;
+      color: var(--text-secondary); text-align: center;
+    }
+    .panel-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    .comment-item {
+      display: flex; gap: 8px; padding: 6px 0; align-items: flex-start;
+    }
+    .comment-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .comment-text { font-size: 11px; color: var(--text-secondary); }
+    .comment-text strong { color: var(--text-primary); font-weight: 600; }
+    .comment-badge {
+      font-size: 8px; padding: 1px 5px; border-radius: 4px;
+      font-weight: 700; display: inline-block; margin-left: 4px;
+    }
+
+    /* ---- FEATURES ---- */
+    .section {
+      padding: 100px 24px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .section-label {
+      font-size: 13px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 16px; letter-spacing: -0.02em;
+    }
+    .section p.subtitle {
+      font-size: 17px; color: var(--text-secondary);
+      max-width: 560px; margin-bottom: 48px;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--bg-card); border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+    }
+    .feature-card h3 {
+      font-size: 18px; font-weight: 700; margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* ---- HOW IT WORKS ---- */
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+      counter-reset: step;
+    }
+    .step { counter-increment: step; }
+    .step-number {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; margin-bottom: 20px;
+    }
+    .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ---- PRICING ---- */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      max-width: 960px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--bg-card); border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 36px 28px;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent);
+      background: linear-gradient(to bottom, rgba(249,115,22,0.05), var(--bg-card));
+      position: relative;
+    }
+    .pricing-card.featured::before {
+      content: 'MOST POPULAR';
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white;
+      padding: 4px 16px; border-radius: 100px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.05em;
+    }
+    .pricing-tier { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .pricing-price { font-size: 42px; font-weight: 900; margin-bottom: 4px; }
+    .pricing-price span { font-size: 16px; font-weight: 500; color: var(--text-secondary); }
+    .pricing-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+    .pricing-features { list-style: none; margin-bottom: 28px; }
+    .pricing-features li {
+      font-size: 14px; color: var(--text-secondary);
+      padding: 6px 0; display: flex; align-items: center; gap: 10px;
+    }
+    .pricing-features li::before {
+      content: ''; width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(34,197,94,0.15); flex-shrink: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2322c55e'%3E%3Cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-size: 12px; background-position: center; background-repeat: no-repeat;
+    }
+    .pricing-card .btn { width: 100%; justify-content: center; }
+
+    /* ---- CTA ---- */
+    .cta-section {
+      padding: 100px 24px;
+      text-align: center;
+    }
+    .cta-box {
+      max-width: 800px; margin: 0 auto;
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(234,88,12,0.05));
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 24px; padding: 64px 48px;
+    }
+    .cta-box h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800; margin-bottom: 16px;
+    }
+    .cta-box p {
+      font-size: 17px; color: var(--text-secondary);
+      margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 48px 24px;
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      display: flex; align-items: center; gap: 10px; font-weight: 800;
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 13px; color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-primary); }
+    .footer-copy { font-size: 13px; color: var(--text-secondary); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .features-grid, .steps-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .app-preview-content { height: 300px; }
+      .app-preview-sidebar, .app-preview-panel { display: none; }
+      .hero-platforms { flex-wrap: wrap; }
+      .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">S</div>
+        StreamSync
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#download" class="btn btn-primary">Download Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">Now available for Mac, Windows &amp; Linux</div>
+    <h1>
+      Go Live Everywhere.<br />
+      <span class="gradient">Sell Anything.</span>
+    </h1>
+    <p>
+      Stream to TikTok, YouTube, Instagram, and Facebook simultaneously.
+      AI detects buying signals in real-time so you never miss a sale.
+    </p>
+    <div class="hero-buttons">
+      <a href="#download" class="btn btn-primary btn-large">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download for Free
+      </a>
+      <a href="#how-it-works" class="btn btn-secondary btn-large">See How It Works</a>
+    </div>
+    <div class="hero-platforms">
+      <div class="hero-platform"><div class="dot" style="background: var(--tiktok)"></div> TikTok</div>
+      <div class="hero-platform"><div class="dot" style="background: var(--youtube)"></div> YouTube</div>
+      <div class="hero-platform"><div class="dot" style="background: var(--instagram)"></div> Instagram</div>
+      <div class="hero-platform"><div class="dot" style="background: var(--facebook)"></div> Facebook</div>
+    </div>
+
+    <!-- APP MOCKUP -->
+    <div class="app-preview">
+      <div class="app-preview-bar">
+        <div class="app-preview-dot" style="background:#ff5f57"></div>
+        <div class="app-preview-dot" style="background:#febc2e"></div>
+        <div class="app-preview-dot" style="background:#28c840"></div>
+      </div>
+      <div class="app-preview-content">
+        <div class="app-preview-sidebar">
+          <div class="logo">
+            <div class="logo-icon">S</div>
+            StreamSync
+          </div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div> Dashboard</div>
+          <div class="sidebar-item active"><div class="sidebar-dot"></div> Go Live</div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div> Products</div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div> Analytics</div>
+          <div class="sidebar-item"><div class="sidebar-dot"></div> Settings</div>
+        </div>
+        <div class="app-preview-main">
+          <div class="phone-panel">
+            <div class="phone-header" style="background: rgba(255,0,80,0.1)">
+              <div class="dot" style="background: var(--tiktok)"></div> TikTok
+            </div>
+            <div class="phone-body" style="background: linear-gradient(135deg, #1a0a1a, #0a0e1a)">🎵</div>
+            <div class="phone-footer"><div class="live-dot"></div> LIVE</div>
+          </div>
+          <div class="phone-panel">
+            <div class="phone-header" style="background: rgba(255,0,0,0.1)">
+              <div class="dot" style="background: var(--youtube)"></div> YouTube
+            </div>
+            <div class="phone-body" style="background: linear-gradient(135deg, #1a0a0a, #0a0e1a)">&#9654;&#65039;</div>
+            <div class="phone-footer"><div class="live-dot"></div> LIVE</div>
+          </div>
+          <div class="phone-panel">
+            <div class="phone-header" style="background: rgba(225,48,108,0.1)">
+              <div class="dot" style="background: var(--instagram)"></div> Instagram
+            </div>
+            <div class="phone-body" style="background: linear-gradient(135deg, #1a0a15, #0a0e1a)">&#128248;</div>
+            <div class="phone-footer"><div class="live-dot"></div> LIVE</div>
+          </div>
+          <div class="phone-panel">
+            <div class="phone-header" style="background: rgba(24,119,242,0.1)">
+              <div class="dot" style="background: var(--facebook)"></div> Facebook
+            </div>
+            <div class="phone-body" style="background: linear-gradient(135deg, #0a0f1a, #0a0e1a)">&#128100;</div>
+            <div class="phone-footer"><div class="live-dot"></div> LIVE</div>
+          </div>
+        </div>
+        <div class="app-preview-panel">
+          <div class="panel-tabs">
+            <div class="panel-tab active">Comments</div>
+            <div class="panel-tab">Products</div>
+            <div class="panel-tab">AI</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:var(--tiktok)">S</div>
+            <div class="comment-text"><strong>ShopQueen23</strong> How much is this?
+              <span class="comment-badge" style="background:rgba(249,115,22,0.2);color:var(--accent)">BUYING</span>
+            </div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:var(--youtube)">D</div>
+            <div class="comment-text"><strong>DealHunter_</strong> Great stream!</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:var(--instagram)">T</div>
+            <div class="comment-text"><strong>TrendyMom</strong> I want one!
+              <span class="comment-badge" style="background:rgba(249,115,22,0.2);color:var(--accent)">BUYING</span>
+            </div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:var(--facebook)">L</div>
+            <div class="comment-text"><strong>LiveBuyer99</strong> Where to buy?
+              <span class="comment-badge" style="background:rgba(249,115,22,0.2);color:var(--accent)">BUYING</span>
+            </div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:var(--tiktok)">G</div>
+            <div class="comment-text"><strong>GlowUpGirl</strong> Love this vibe!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-label">Features</div>
+    <h2>Everything you need to<br />sell live</h2>
+    <p class="subtitle">Built for creators and sellers who want to maximize every live stream across every platform.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(249,115,22,0.1)">&#128250;</div>
+        <h3>Multi-Platform Streaming</h3>
+        <p>Go live on TikTok, YouTube, Instagram, and Facebook simultaneously from one window. No extra software needed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(34,197,94,0.1)">&#129302;</div>
+        <h3>AI Buying Signals</h3>
+        <p>Our AI scans comments in real-time to detect purchase intent. Never miss a "how much?" or "where to buy?" again.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(99,102,241,0.1)">&#128172;</div>
+        <h3>Unified Comments</h3>
+        <p>See comments from all platforms in one feed. Platform-colored badges make it easy to know who's saying what.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(236,72,153,0.1)">&#127991;&#65039;</div>
+        <h3>Product Overlays</h3>
+        <p>Pin products to your stream with floating overlays showing name, price, and a buy button. One click to showcase.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(249,115,22,0.1)">&#9889;</div>
+        <h3>Smart Auto-Replies</h3>
+        <p>AI generates personalized reply suggestions for buying signals. Send with one click to convert viewers into buyers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(14,165,233,0.1)">&#128274;</div>
+        <h3>Session Persistence</h3>
+        <p>Log into your platform accounts once. StreamSync remembers your sessions across app restarts. No re-logins needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works" style="background: var(--bg-secondary); border-radius: 32px; max-width: 100%; padding-left: max(24px, calc((100% - 1200px)/2)); padding-right: max(24px, calc((100% - 1200px)/2));">
+    <div class="section-label">How It Works</div>
+    <h2>Live in 3 steps</h2>
+    <p class="subtitle">From download to your first sale in under 5 minutes.</p>
+
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Download &amp; Sign In</h3>
+        <p>Install StreamSync and sign into your TikTok, YouTube, Instagram, and Facebook accounts directly in the app. Your sessions stay saved.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Add Products &amp; Go Live</h3>
+        <p>Add your products with name, price, and buy link. Hit "Go Live" to start streaming on all platforms at once with product overlays.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Sell with AI Copilot</h3>
+        <p>Watch as AI detects buying signals in comments. Send suggested replies with one click to convert viewers into customers instantly.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div style="text-align: center;">
+      <div class="section-label">Pricing</div>
+      <h2>Start free. Scale when ready.</h2>
+      <p class="subtitle" style="margin-left: auto; margin-right: auto;">No credit card required. Try everything free for 14 days.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Starter</div>
+        <div class="pricing-price">Free</div>
+        <div class="pricing-desc">Perfect for getting started</div>
+        <ul class="pricing-features">
+          <li>2 platforms simultaneously</li>
+          <li>Basic comment feed</li>
+          <li>5 products</li>
+          <li>Product overlays</li>
+        </ul>
+        <a href="#download" class="btn btn-secondary" style="width:100%;justify-content:center;">Get Started</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price">$29<span>/mo</span></div>
+        <div class="pricing-desc">For serious live sellers</div>
+        <ul class="pricing-features">
+          <li>All 4 platforms</li>
+          <li>AI Buying Signals</li>
+          <li>Smart Auto-Replies</li>
+          <li>Unlimited products</li>
+          <li>Analytics dashboard</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#download" class="btn btn-primary" style="width:100%;justify-content:center;">Start Free Trial</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-desc">For teams and agencies</div>
+        <ul class="pricing-features">
+          <li>Everything in Pro</li>
+          <li>Team collaboration</li>
+          <li>White-label options</li>
+          <li>API access</li>
+          <li>Dedicated account manager</li>
+        </ul>
+        <a href="mailto:hello@streamsync.live" class="btn btn-secondary" style="width:100%;justify-content:center;">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="download">
+    <div class="cta-box">
+      <h2>Ready to sell live?</h2>
+      <p>Download StreamSync free and start streaming to all platforms in minutes.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest" class="btn btn-primary btn-large">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 16.56 2.93 11.3 4.7 7.72C5.57 5.94 7.36 4.86 9.28 4.84C10.56 4.81 11.78 5.67 12.56 5.67C13.34 5.67 14.83 4.62 16.39 4.8C17.07 4.83 18.92 5.09 20.1 6.81C19.98 6.88 17.62 8.27 17.65 11.11C17.68 14.51 20.61 15.62 20.64 15.63C20.61 15.7 20.16 17.29 19.03 18.91L18.71 19.5Z"/></svg>
+          Download for Mac
+        </a>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest" class="btn btn-secondary btn-large">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Download for Windows
+        </a>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest" class="btn btn-secondary btn-large">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          Download for Linux
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <a href="#" class="footer-logo">
+        <div class="nav-logo-icon">S</div>
+        StreamSync
+      </a>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop">GitHub</a>
+        <a href="mailto:hello@streamsync.live">Contact</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 StreamSync. All rights reserved.</div>
+    </div>
+  </footer>
+
+</body>
+</html>
