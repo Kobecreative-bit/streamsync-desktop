@@ -30,7 +30,7 @@ export interface ShopifyOrder {
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY || ''
 const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET || ''
-const REDIRECT_URI = 'streamsync://shopify/callback'
+const REDIRECT_URI = 'https://streamsync.live/shopify/callback'
 const SCOPES = 'read_products,read_orders'
 
 export function getShopifyAuthUrl(shop: string): string {

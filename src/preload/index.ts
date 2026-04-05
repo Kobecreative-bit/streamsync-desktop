@@ -26,7 +26,15 @@ const api = {
   },
   onProductsUpdated: (callback: () => void): void => {
     ipcRenderer.on('products-updated', () => callback())
-  }
+  },
+  createCheckoutSession: (params: { priceId: string; email: string; customerId?: string }): Promise<void> =>
+    ipcRenderer.invoke('create-checkout-session', params),
+  createBillingPortal: (customerId: string): Promise<void> =>
+    ipcRenderer.invoke('create-billing-portal', customerId),
+  getSelectedPlatforms: (): Promise<string[]> =>
+    ipcRenderer.invoke('get-selected-platforms'),
+  setSelectedPlatforms: (platforms: string[]): Promise<void> =>
+    ipcRenderer.invoke('set-selected-platforms', platforms)
 }
 
 interface Product {

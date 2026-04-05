@@ -4,8 +4,40 @@ import { is } from '@electron-toolkit/utils'
 import { store } from './store'
 import type { Product } from './store'
 import { createCheckoutSession, createBillingPortalSession } from './stripe'
+import { exchangeCodeForToken, saveShopifyConnection } from './shopify'
 
 let mainWindow: BrowserWindow | null = null
+
+// Register custom protocol for Shopify OAuth callback
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('streamsync', process.execPath, [process.argv[1]])
+  }
+} else {
+  app.setAsDefaultProtocolClient('streamsync')
+}
+
+// Handle custom protocol on macOS
+app.on('open-url', async (_event, url) => {
+  if (url.startsWith('streamsync://shopify/callback')) {
+    const params = new URL(url)
+    const code = params.searchParams.get('code')
+    const shop = params.searchParams.get('shop')
+    if (code && shop) {
+      const token = await exchangeCodeForToken(shop, code)
+      if (token) {
+        saveShopifyConnection({
+          shop,
+          accessToken: token,
+          shopName: shop.replace('.myshopify.com', ''),
+          connectedAt: Date.now()
+        })
+        mainWindow?.webContents.send('shopify-connected', { shop, shopName: shop.replace('.myshopify.com', '') })
+      }
+    }
+  }
+  mainWindow?.focus()
+})
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({

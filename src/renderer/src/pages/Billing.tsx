@@ -19,8 +19,8 @@ const plans: PlanTier[] = [
     name: 'Starter',
     monthlyPrice: 29,
     annualPrice: 23,
-    monthlyPriceId: 'price_starter_monthly',
-    annualPriceId: 'price_starter_annual',
+    monthlyPriceId: 'price_1TIiWCARUnydmSgWShLWNzCo',
+    annualPriceId: 'price_1TIiWEARUnydmSgW0RzPA5xQ',
     features: [
       '2 simultaneous platforms',
       '10 products',
@@ -35,8 +35,8 @@ const plans: PlanTier[] = [
     name: 'Pro',
     monthlyPrice: 79,
     annualPrice: 63,
-    monthlyPriceId: 'price_pro_monthly',
-    annualPriceId: 'price_pro_annual',
+    monthlyPriceId: 'price_1TIiWFARUnydmSgWwougM5qb',
+    annualPriceId: 'price_1TIiWHARUnydmSgWg9fK5bYN',
     features: [
       'All 4 platforms',
       'Unlimited products',
@@ -53,8 +53,8 @@ const plans: PlanTier[] = [
     name: 'Enterprise',
     monthlyPrice: 199,
     annualPrice: 159,
-    monthlyPriceId: 'price_enterprise_monthly',
-    annualPriceId: 'price_enterprise_annual',
+    monthlyPriceId: 'price_1TIiWIARUnydmSgWjwTpdQ95',
+    annualPriceId: 'price_1TIiWKARUnydmSgWwXANk60q',
     features: [
       'All 4 platforms',
       'Unlimited products',
