@@ -34,7 +34,126 @@ const api = {
   getSelectedPlatforms: (): Promise<string[]> =>
     ipcRenderer.invoke('get-selected-platforms'),
   setSelectedPlatforms: (platforms: string[]): Promise<void> =>
-    ipcRenderer.invoke('set-selected-platforms', platforms)
+    ipcRenderer.invoke('set-selected-platforms', platforms),
+
+  // Shopify
+  shopifyConnect: (domain: string): Promise<void> =>
+    ipcRenderer.invoke('shopify-connect', domain),
+  shopifyDisconnect: (): Promise<void> =>
+    ipcRenderer.invoke('shopify-disconnect'),
+  shopifyGetConnection: (): Promise<ShopifyConnection | null> =>
+    ipcRenderer.invoke('shopify-get-connection'),
+  shopifySaveConnection: (conn: ShopifyConnection): Promise<void> =>
+    ipcRenderer.invoke('shopify-save-connection', conn),
+  shopifyFetchProducts: (): Promise<ShopifyProduct[]> =>
+    ipcRenderer.invoke('shopify-fetch-products'),
+  shopifyFetchOrders: (since?: string): Promise<ShopifyOrder[]> =>
+    ipcRenderer.invoke('shopify-fetch-orders', since),
+  onShopifyCallback: (callback: (event: unknown, url: string) => void): void => {
+    ipcRenderer.on('shopify-connected', (event, data) => callback(event, data))
+  },
+
+  // Audit Log
+  getAuditLog: (filter?: { action?: string; from?: number; to?: number }): Promise<AuditEntry[]> =>
+    ipcRenderer.invoke('get-audit-log', filter),
+
+  // Branding
+  getBranding: (): Promise<BrandingConfig> =>
+    ipcRenderer.invoke('get-branding'),
+  updateBranding: (branding: BrandingConfig): Promise<BrandingConfig> =>
+    ipcRenderer.invoke('update-branding', branding),
+
+  // SSO
+  getSSOConfig: (): Promise<SSOConfigData> =>
+    ipcRenderer.invoke('get-sso-config'),
+  updateSSOConfig: (config: SSOConfigData): Promise<SSOConfigData> =>
+    ipcRenderer.invoke('update-sso-config', config),
+
+  // Sessions & Revenue (Analytics)
+  getSessions: (): Promise<StreamSession[]> =>
+    ipcRenderer.invoke('get-sessions'),
+  saveSession: (session: StreamSession): Promise<StreamSession> =>
+    ipcRenderer.invoke('save-session', session),
+  getRevenue: (): Promise<RevenueEntry[]> =>
+    ipcRenderer.invoke('get-revenue'),
+  saveRevenue: (entry: RevenueEntry): Promise<RevenueEntry> =>
+    ipcRenderer.invoke('save-revenue', entry),
+
+  // File Dialog
+  openCsvDialog: (): Promise<string | null> =>
+    ipcRenderer.invoke('open-csv-dialog'),
+
+  // Replay
+  replayGetFrameBase64: (framePath: string): Promise<string> =>
+    ipcRenderer.invoke('replay-get-frame-base64', framePath)
+}
+
+interface ShopifyConnection {
+  shop: string
+  accessToken: string
+  shopName: string
+  connectedAt: number
+}
+
+interface ShopifyProduct {
+  id: string
+  title: string
+  price: number
+  description: string
+  image: string
+  handle: string
+  url: string
+  variants: { id: string; title: string; price: number; sku: string }[]
+}
+
+interface ShopifyOrder {
+  id: string
+  orderNumber: number
+  totalPrice: number
+  currency: string
+  createdAt: string
+  lineItems: { title: string; quantity: number; price: number }[]
+}
+
+interface AuditEntry {
+  id: string
+  timestamp: number
+  userId: string
+  action: string
+  resource: string
+  details: string
+  metadata?: Record<string, unknown>
+}
+
+interface BrandingConfig {
+  appName: string
+  accentColor: string
+  logoPath: string
+}
+
+interface SSOConfigData {
+  provider: 'okta' | 'azure_ad' | 'google_workspace' | 'custom_saml'
+  entityId: string
+  ssoUrl: string
+  certificate: string
+  status: 'not_configured' | 'configured' | 'active'
+}
+
+interface StreamSession {
+  id: string
+  startTime: number
+  endTime: number | null
+  duration: number
+  platforms: string[]
+  peakViewers: number
+  totalComments: number
+  buyingSignals: number
+  revenue: number
+}
+
+interface RevenueEntry {
+  date: string
+  amount: number
 }
 
 interface Product {

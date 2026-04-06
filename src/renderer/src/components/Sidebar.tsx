@@ -8,13 +8,47 @@ interface SidebarProps {
   isLive: boolean
 }
 
-const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-  { id: 'golive', label: 'Go Live', icon: LiveIcon },
-  { id: 'products', label: 'Products', icon: ProductsIcon },
-  { id: 'analytics', label: 'Analytics', icon: AnalyticsIcon },
-  { id: 'replays', label: 'Replays', icon: ReplaysIcon },
-  { id: 'settings', label: 'Settings', icon: SettingsIcon }
+interface NavItem {
+  id: string
+  label: string
+  icon: React.ComponentType<{ active: boolean }>
+}
+
+interface NavSection {
+  label?: string
+  items: NavItem[]
+}
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
+      { id: 'golive', label: 'Go Live', icon: LiveIcon },
+      { id: 'products', label: 'Products', icon: ProductsIcon },
+      { id: 'analytics', label: 'Analytics', icon: AnalyticsIcon },
+      { id: 'replays', label: 'Replays', icon: ReplaysIcon }
+    ]
+  },
+  {
+    label: 'Account',
+    items: [
+      { id: 'billing', label: 'Billing', icon: BillingIcon },
+      { id: 'team', label: 'Team', icon: TeamIcon },
+      { id: 'shopify', label: 'Shopify', icon: ShopifyIcon }
+    ]
+  },
+  {
+    label: 'Enterprise',
+    items: [
+      { id: 'whitelabel', label: 'White Label', icon: WhiteLabelIcon },
+      { id: 'compliance', label: 'Compliance', icon: ComplianceIcon }
+    ]
+  },
+  {
+    items: [
+      { id: 'settings', label: 'Settings', icon: SettingsIcon }
+    ]
+  }
 ]
 
 const planBadgeColors: Record<string, string> = {
@@ -51,28 +85,40 @@ function Sidebar({ currentPage, onNavigate, isLive }: SidebarProps): JSX.Element
 
       {/* Nav */}
       <nav
-        className="flex-1 px-3 mt-4 space-y-1"
+        className="flex-1 px-3 mt-4 space-y-1 overflow-y-auto"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
-        {navItems.map((item) => {
-          const active = currentPage === item.id
-          return (
-            <button
-              key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                ${active ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
-            >
-              <item.icon active={active} />
-              <span>{item.label}</span>
-              {item.id === 'golive' && isLive && (
-                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-danger rounded text-white animate-pulse">
-                  LIVE
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {navSections.map((section, sectionIdx) => (
+          <div key={section.label || `section-${sectionIdx}`}>
+            {sectionIdx > 0 && (
+              <div className="my-2 border-t border-white/5" />
+            )}
+            {section.label && (
+              <p className="px-3 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60">
+                {section.label}
+              </p>
+            )}
+            {section.items.map((item) => {
+              const active = currentPage === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                    ${active ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
+                >
+                  <item.icon active={active} />
+                  <span>{item.label}</span>
+                  {item.id === 'golive' && isLive && (
+                    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-danger rounded text-white animate-pulse">
+                      LIVE
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Upgrade banner for non-enterprise users */}
@@ -167,6 +213,46 @@ function ReplaysIcon({ active }: { active: boolean }): JSX.Element {
   return (
     <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  )
+}
+
+function BillingIcon({ active }: { active: boolean }): JSX.Element {
+  return (
+    <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H5a3 3 0 00-3 3v8a3 3 0 003 3z" />
+    </svg>
+  )
+}
+
+function TeamIcon({ active }: { active: boolean }): JSX.Element {
+  return (
+    <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  )
+}
+
+function ShopifyIcon({ active }: { active: boolean }): JSX.Element {
+  return (
+    <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    </svg>
+  )
+}
+
+function WhiteLabelIcon({ active }: { active: boolean }): JSX.Element {
+  return (
+    <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+    </svg>
+  )
+}
+
+function ComplianceIcon({ active }: { active: boolean }): JSX.Element {
+  return (
+    <svg className={`w-5 h-5 ${active ? 'text-accent' : 'text-text-secondary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
     </svg>
   )
 }

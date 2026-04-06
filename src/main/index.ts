@@ -1,10 +1,19 @@
-import { app, BrowserWindow, ipcMain, Menu, session, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, session, shell } from 'electron'
 import { join } from 'path'
+import { readFileSync } from 'fs'
 import { is } from '@electron-toolkit/utils'
 import { store } from './store'
 import type { Product } from './store'
 import { createCheckoutSession, createBillingPortalSession } from './stripe'
-import { exchangeCodeForToken, saveShopifyConnection } from './shopify'
+import {
+  exchangeCodeForToken,
+  saveShopifyConnection,
+  getShopifyConnection,
+  disconnectShopify,
+  openShopifyAuth,
+  fetchShopifyProducts,
+  fetchShopifyOrders
+} from './shopify'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -247,6 +256,144 @@ function setupIPC(): void {
   ipcMain.handle('set-selected-platforms', (_event, platforms: string[]) => {
     store.set('selectedPlatforms', platforms)
     return platforms
+  })
+
+  // --- Shopify ---
+  ipcMain.handle('shopify-connect', (_event, domain: string) => {
+    openShopifyAuth(domain)
+  })
+
+  ipcMain.handle('shopify-disconnect', () => {
+    disconnectShopify()
+  })
+
+  ipcMain.handle('shopify-get-connection', () => {
+    return getShopifyConnection()
+  })
+
+  ipcMain.handle('shopify-save-connection', (_event, conn) => {
+    saveShopifyConnection(conn)
+  })
+
+  ipcMain.handle('shopify-fetch-products', async () => {
+    const conn = getShopifyConnection()
+    if (!conn) return []
+    return fetchShopifyProducts(conn)
+  })
+
+  ipcMain.handle('shopify-fetch-orders', async (_event, since?: string) => {
+    const conn = getShopifyConnection()
+    if (!conn) return []
+    return fetchShopifyOrders(conn, since)
+  })
+
+  // --- Audit Log ---
+  ipcMain.handle('get-audit-log', (_event, filter?: { action?: string; from?: number; to?: number }) => {
+    const entries: Array<{
+      id: string
+      timestamp: number
+      userId: string
+      action: string
+      resource: string
+      details: string
+      metadata?: Record<string, unknown>
+    }> = store.get('auditLog' as never) || []
+    let filtered = entries
+    if (filter?.action) {
+      filtered = filtered.filter((e) => e.action === filter.action)
+    }
+    if (filter?.from) {
+      const from = filter.from
+      filtered = filtered.filter((e) => e.timestamp >= from)
+    }
+    if (filter?.to) {
+      const to = filter.to
+      filtered = filtered.filter((e) => e.timestamp <= to)
+    }
+    return filtered
+  })
+
+  // --- Branding ---
+  ipcMain.handle('get-branding', () => {
+    return store.get('branding' as never) || {
+      appName: 'StreamSync',
+      accentColor: '#f97316',
+      logoPath: ''
+    }
+  })
+
+  ipcMain.handle('update-branding', (_event, branding) => {
+    store.set('branding' as never, branding)
+    return branding
+  })
+
+  // --- SSO Config ---
+  ipcMain.handle('get-sso-config', () => {
+    return store.get('ssoConfig' as never) || {
+      provider: 'okta',
+      entityId: '',
+      ssoUrl: '',
+      certificate: '',
+      status: 'not_configured'
+    }
+  })
+
+  ipcMain.handle('update-sso-config', (_event, config) => {
+    store.set('ssoConfig' as never, config)
+    return config
+  })
+
+  // --- Sessions (Analytics) ---
+  ipcMain.handle('get-sessions', () => {
+    return store.get('sessions' as never) || []
+  })
+
+  ipcMain.handle('save-session', (_event, sessionData) => {
+    const sessions: unknown[] = (store.get('sessions' as never) as unknown[]) || []
+    sessions.push(sessionData)
+    store.set('sessions' as never, sessions)
+    return sessionData
+  })
+
+  // --- Revenue ---
+  ipcMain.handle('get-revenue', () => {
+    return store.get('revenue' as never) || []
+  })
+
+  ipcMain.handle('save-revenue', (_event, entry) => {
+    const revenue: unknown[] = (store.get('revenue' as never) as unknown[]) || []
+    revenue.push(entry)
+    store.set('revenue' as never, revenue)
+    return entry
+  })
+
+  // --- CSV Dialog ---
+  ipcMain.handle('open-csv-dialog', async () => {
+    if (!mainWindow) return null
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select CSV File',
+      filters: [
+        { name: 'CSV Files', extensions: ['csv'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['openFile']
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    try {
+      return readFileSync(result.filePaths[0], 'utf-8')
+    } catch {
+      return null
+    }
+  })
+
+  // --- Replay Frame ---
+  ipcMain.handle('replay-get-frame-base64', (_event, framePath: string) => {
+    try {
+      const buffer = readFileSync(framePath)
+      return buffer.toString('base64')
+    } catch {
+      return ''
+    }
   })
 }
 

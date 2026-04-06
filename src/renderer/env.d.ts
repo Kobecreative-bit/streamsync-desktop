@@ -1,5 +1,73 @@
 /// <reference types="vite/client" />
 
+interface ShopifyConnection {
+  shop: string
+  accessToken: string
+  shopName: string
+  connectedAt: number
+}
+
+interface ShopifyProduct {
+  id: string
+  title: string
+  price: number
+  description: string
+  image: string
+  handle: string
+  url: string
+  variants: { id: string; title: string; price: number; sku: string }[]
+}
+
+interface ShopifyOrder {
+  id: string
+  orderNumber: number
+  totalPrice: number
+  currency: string
+  createdAt: string
+  lineItems: { title: string; quantity: number; price: number }[]
+}
+
+interface AuditEntry {
+  id: string
+  timestamp: number
+  userId: string
+  action: string
+  resource: string
+  details: string
+  metadata?: Record<string, unknown>
+}
+
+interface BrandingConfig {
+  appName: string
+  accentColor: string
+  logoPath: string
+}
+
+interface SSOConfigData {
+  provider: 'okta' | 'azure_ad' | 'google_workspace' | 'custom_saml'
+  entityId: string
+  ssoUrl: string
+  certificate: string
+  status: 'not_configured' | 'configured' | 'active'
+}
+
+interface StreamSession {
+  id: string
+  startTime: number
+  endTime: number | null
+  duration: number
+  platforms: string[]
+  peakViewers: number
+  totalComments: number
+  buyingSignals: number
+  revenue: number
+}
+
+interface RevenueEntry {
+  date: string
+  amount: number
+}
+
 interface StreamSyncAPI {
   getVersion: () => Promise<string>
   getPlatform: () => Promise<string>
@@ -15,6 +83,46 @@ interface StreamSyncAPI {
   onEndStream: (callback: () => void) => void
   onAddProduct: (callback: () => void) => void
   onProductsUpdated: (callback: () => void) => void
+
+  // Billing
+  createCheckoutSession: (params: { priceId: string; email: string; customerId?: string }) => Promise<void>
+  createBillingPortal: (customerId: string) => Promise<void>
+
+  // Platform selection
+  getSelectedPlatforms: () => Promise<string[]>
+  setSelectedPlatforms: (platforms: string[]) => Promise<void>
+
+  // Shopify
+  shopifyConnect: (domain: string) => Promise<void>
+  shopifyDisconnect: () => Promise<void>
+  shopifyGetConnection: () => Promise<ShopifyConnection | null>
+  shopifySaveConnection: (conn: ShopifyConnection) => Promise<void>
+  shopifyFetchProducts: () => Promise<ShopifyProduct[]>
+  shopifyFetchOrders: (since?: string) => Promise<ShopifyOrder[]>
+  onShopifyCallback?: (callback: (event: unknown, url: string) => void) => void
+
+  // Audit Log
+  getAuditLog: (filter?: { action?: string; from?: number; to?: number }) => Promise<AuditEntry[]>
+
+  // Branding
+  getBranding: () => Promise<BrandingConfig>
+  updateBranding: (branding: BrandingConfig) => Promise<BrandingConfig>
+
+  // SSO
+  getSSOConfig: () => Promise<SSOConfigData>
+  updateSSOConfig: (config: SSOConfigData) => Promise<SSOConfigData>
+
+  // Sessions & Revenue (Analytics)
+  getSessions: () => Promise<StreamSession[]>
+  saveSession: (session: StreamSession) => Promise<StreamSession>
+  getRevenue: () => Promise<RevenueEntry[]>
+  saveRevenue: (entry: RevenueEntry) => Promise<RevenueEntry>
+
+  // File Dialog
+  openCsvDialog: () => Promise<string | null>
+
+  // Replay
+  replayGetFrameBase64: (framePath: string) => Promise<string>
 }
 
 interface Product {
