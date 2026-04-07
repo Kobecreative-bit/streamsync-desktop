@@ -92,8 +92,14 @@ const api = {
     ipcRenderer.invoke('rtmp-get-stream-keys'),
   rtmpSaveStreamKeys: (keys: RTMPStreamKey[]): Promise<RTMPStreamKey[]> =>
     ipcRenderer.invoke('rtmp-save-stream-keys', keys),
-  rtmpStartStream: (platform: string, serverUrl: string, streamKey: string): Promise<boolean> =>
-    ipcRenderer.invoke('rtmp-start-stream', platform, serverUrl, streamKey),
+  rtmpGetConfig: (): Promise<RTMPConfig> =>
+    ipcRenderer.invoke('rtmp-get-config'),
+  rtmpSaveConfig: (config: RTMPConfig): Promise<RTMPConfig> =>
+    ipcRenderer.invoke('rtmp-save-config', config),
+  rtmpListDevices: (): Promise<MediaDeviceInfo[]> =>
+    ipcRenderer.invoke('rtmp-list-devices'),
+  rtmpStartMultiStream: (keys: RTMPStreamKey[]): Promise<boolean> =>
+    ipcRenderer.invoke('rtmp-start-multistream', keys),
   rtmpStopStream: (platform: string): Promise<void> =>
     ipcRenderer.invoke('rtmp-stop-stream', platform),
   rtmpStopAll: (): Promise<void> =>
@@ -102,6 +108,8 @@ const api = {
     ipcRenderer.invoke('rtmp-get-statuses'),
   rtmpCheckFFmpeg: (): Promise<boolean> =>
     ipcRenderer.invoke('rtmp-check-ffmpeg'),
+  rtmpIsStreaming: (): Promise<boolean> =>
+    ipcRenderer.invoke('rtmp-is-streaming'),
   onRTMPStatusUpdate: (callback: (statuses: RTMPStatus[]) => void): void => {
     ipcRenderer.on('rtmp-status-update', (_event, statuses) => callback(statuses))
   }
@@ -186,6 +194,24 @@ interface RTMPStatus {
   platform: string
   status: 'idle' | 'connecting' | 'live' | 'error'
   error?: string
+  bitrate?: string
+  fps?: string
+  droppedFrames?: number
+}
+
+interface RTMPConfig {
+  videoDevice: string
+  audioDevice: string
+  resolution: '1920x1080' | '1280x720' | '854x480'
+  framerate: number
+  videoBitrate: number
+  audioBitrate: number
+}
+
+interface MediaDeviceInfo {
+  id: string
+  name: string
+  type: 'video' | 'audio'
 }
 
 interface Product {

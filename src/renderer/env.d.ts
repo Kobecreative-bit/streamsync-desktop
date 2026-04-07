@@ -127,11 +127,15 @@ interface StreamSyncAPI {
   // RTMP Streaming
   rtmpGetStreamKeys: () => Promise<RTMPStreamKey[]>
   rtmpSaveStreamKeys: (keys: RTMPStreamKey[]) => Promise<RTMPStreamKey[]>
-  rtmpStartStream: (platform: string, serverUrl: string, streamKey: string) => Promise<boolean>
+  rtmpGetConfig: () => Promise<RTMPConfig>
+  rtmpSaveConfig: (config: RTMPConfig) => Promise<RTMPConfig>
+  rtmpListDevices: () => Promise<RTMPMediaDevice[]>
+  rtmpStartMultiStream: (keys: RTMPStreamKey[]) => Promise<boolean>
   rtmpStopStream: (platform: string) => Promise<void>
   rtmpStopAll: () => Promise<void>
   rtmpGetStatuses: () => Promise<RTMPStatus[]>
   rtmpCheckFFmpeg: () => Promise<boolean>
+  rtmpIsStreaming: () => Promise<boolean>
   onRTMPStatusUpdate: (callback: (statuses: RTMPStatus[]) => void) => void
 }
 
@@ -146,6 +150,24 @@ interface RTMPStatus {
   platform: string
   status: 'idle' | 'connecting' | 'live' | 'error'
   error?: string
+  bitrate?: string
+  fps?: string
+  droppedFrames?: number
+}
+
+interface RTMPConfig {
+  videoDevice: string
+  audioDevice: string
+  resolution: '1920x1080' | '1280x720' | '854x480'
+  framerate: number
+  videoBitrate: number
+  audioBitrate: number
+}
+
+interface RTMPMediaDevice {
+  id: string
+  name: string
+  type: 'video' | 'audio'
 }
 
 interface Product {

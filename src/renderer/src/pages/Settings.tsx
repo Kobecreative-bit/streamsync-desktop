@@ -385,16 +385,34 @@ const PLATFORM_LABELS: Record<string, { name: string; color: string }> = {
 
 function RTMPSettings(): JSX.Element {
   const [keys, setKeys] = useState<RTMPStreamKey[]>([])
+  const [config, setConfig] = useState<RTMPConfig>({
+    videoDevice: '0',
+    audioDevice: '0',
+    resolution: '1280x720',
+    framerate: 30,
+    videoBitrate: 4500,
+    audioBitrate: 160
+  })
+  const [devices, setDevices] = useState<RTMPMediaDevice[]>([])
   const [ffmpegOk, setFfmpegOk] = useState<boolean | null>(null)
   const [saving, setSaving] = useState(false)
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     window.streamSync.rtmpGetStreamKeys().then(setKeys)
-    window.streamSync.rtmpCheckFFmpeg().then(setFfmpegOk)
+    window.streamSync.rtmpGetConfig().then(setConfig)
+    window.streamSync.rtmpCheckFFmpeg().then((ok) => {
+      setFfmpegOk(ok)
+      if (ok) {
+        window.streamSync.rtmpListDevices().then(setDevices)
+      }
+    })
   }, [])
 
-  const handleUpdate = (platform: string, field: string, value: string | boolean): void => {
+  const videoDevices = devices.filter((d) => d.type === 'video')
+  const audioDevices = devices.filter((d) => d.type === 'audio')
+
+  const handleKeyUpdate = (platform: string, field: string, value: string | boolean): void => {
     setKeys((prev) =>
       prev.map((k) => (k.platform === platform ? { ...k, [field]: value } : k))
     )
@@ -402,8 +420,16 @@ function RTMPSettings(): JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     setSaving(true)
-    await window.streamSync.rtmpSaveStreamKeys(keys)
+    await Promise.all([
+      window.streamSync.rtmpSaveStreamKeys(keys),
+      window.streamSync.rtmpSaveConfig(config)
+    ])
     setSaving(false)
+  }
+
+  const refreshDevices = async (): Promise<void> => {
+    const d = await window.streamSync.rtmpListDevices()
+    setDevices(d)
   }
 
   return (
@@ -411,11 +437,11 @@ function RTMPSettings(): JSX.Element {
       <div className="flex items-center gap-2.5 mb-4">
         <div className="w-7 h-7 rounded-md bg-white/5 flex items-center justify-center">
           <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9.172 15.828a5 5 0 010-7.072m5.656 0a5 5 0 010 7.072M12 12h.01" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
         </div>
         <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
-          RTMP Stream Keys
+          Camera & RTMP Streaming
         </h2>
         {ffmpegOk === false && (
           <span className="ml-auto text-[10px] text-danger bg-danger/10 px-2 py-0.5 rounded-full font-medium">
@@ -432,25 +458,139 @@ function RTMPSettings(): JSX.Element {
       {ffmpegOk === false && (
         <div className="mb-3 p-3 rounded-lg bg-danger/5 border border-danger/10">
           <p className="text-xs text-danger/80">
-            FFmpeg is required for RTMP streaming. Install it via{' '}
+            FFmpeg is required for camera streaming. Install it via{' '}
             <span className="font-mono bg-danger/10 px-1 rounded">brew install ffmpeg</span> (macOS) or download from ffmpeg.org.
           </p>
         </div>
       )}
 
+      {/* Camera & Mic Selection */}
+      <div className="bg-bg-card rounded-xl border border-white/5 divide-y divide-white/5 mb-4">
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-text-primary">Camera & Microphone</p>
+            <button
+              onClick={refreshDevices}
+              className="text-[10px] text-accent hover:text-accent/80 font-medium transition-colors"
+            >
+              Refresh Devices
+            </button>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">Camera</label>
+              <select
+                value={config.videoDevice}
+                onChange={(e) => setConfig((c) => ({ ...c, videoDevice: e.target.value }))}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary focus:outline-none focus:border-accent/50 appearance-none"
+              >
+                {videoDevices.length === 0 && <option value="0">Default Camera (0)</option>}
+                {videoDevices.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">Microphone</label>
+              <select
+                value={config.audioDevice}
+                onChange={(e) => setConfig((c) => ({ ...c, audioDevice: e.target.value }))}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary focus:outline-none focus:border-accent/50 appearance-none"
+              >
+                {audioDevices.length === 0 && <option value="0">Default Microphone (0)</option>}
+                {audioDevices.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Quality Settings */}
+        <div className="px-5 py-4">
+          <p className="text-sm font-medium text-text-primary mb-3">Stream Quality</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">Resolution</label>
+              <select
+                value={config.resolution}
+                onChange={(e) => setConfig((c) => ({ ...c, resolution: e.target.value as RTMPConfig['resolution'] }))}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary focus:outline-none focus:border-accent/50 appearance-none"
+              >
+                <option value="1920x1080">1080p (1920x1080)</option>
+                <option value="1280x720">720p (1280x720)</option>
+                <option value="854x480">480p (854x480)</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">Framerate</label>
+              <select
+                value={config.framerate}
+                onChange={(e) => setConfig((c) => ({ ...c, framerate: parseInt(e.target.value) }))}
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary focus:outline-none focus:border-accent/50 appearance-none"
+              >
+                <option value="30">30 fps</option>
+                <option value="24">24 fps</option>
+                <option value="60">60 fps</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">
+                Video Bitrate ({config.videoBitrate} kbps)
+              </label>
+              <input
+                type="range"
+                min="1000"
+                max="8000"
+                step="500"
+                value={config.videoBitrate}
+                onChange={(e) => setConfig((c) => ({ ...c, videoBitrate: parseInt(e.target.value) }))}
+                className="w-full accent-accent"
+              />
+              <div className="flex justify-between text-[9px] text-text-secondary/40 mt-0.5">
+                <span>1000</span>
+                <span>8000</span>
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">
+                Audio Bitrate ({config.audioBitrate} kbps)
+              </label>
+              <input
+                type="range"
+                min="64"
+                max="320"
+                step="32"
+                value={config.audioBitrate}
+                onChange={(e) => setConfig((c) => ({ ...c, audioBitrate: parseInt(e.target.value) }))}
+                className="w-full accent-accent"
+              />
+              <div className="flex justify-between text-[9px] text-text-secondary/40 mt-0.5">
+                <span>64</span>
+                <span>320</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Stream Keys */}
+      <p className="text-xs text-text-secondary/60 mb-2 px-1">
+        Your camera feed is encoded once and sent to all enabled platforms simultaneously.
+      </p>
       <div className="bg-bg-card rounded-xl border border-white/5 divide-y divide-white/5">
         {keys.map((key) => {
-          const config = PLATFORM_LABELS[key.platform]
+          const plat = PLATFORM_LABELS[key.platform]
           const isVisible = showKeys[key.platform] ?? false
           return (
             <div key={key.platform} className="px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: config.color }} />
-                  <span className="text-sm font-medium text-text-primary">{config.name}</span>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: plat.color }} />
+                  <span className="text-sm font-medium text-text-primary">{plat.name}</span>
                 </div>
                 <button
-                  onClick={() => handleUpdate(key.platform, 'enabled', !key.enabled)}
+                  onClick={() => handleKeyUpdate(key.platform, 'enabled', !key.enabled)}
                   className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
                     key.enabled ? 'bg-accent' : 'bg-white/10'
                   }`}
@@ -469,7 +609,7 @@ function RTMPSettings(): JSX.Element {
                     <input
                       type="text"
                       value={key.serverUrl}
-                      onChange={(e) => handleUpdate(key.platform, 'serverUrl', e.target.value)}
+                      onChange={(e) => handleKeyUpdate(key.platform, 'serverUrl', e.target.value)}
                       className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary font-mono focus:outline-none focus:border-accent/50"
                     />
                   </div>
@@ -486,7 +626,7 @@ function RTMPSettings(): JSX.Element {
                     <input
                       type={isVisible ? 'text' : 'password'}
                       value={key.streamKey}
-                      onChange={(e) => handleUpdate(key.platform, 'streamKey', e.target.value)}
+                      onChange={(e) => handleKeyUpdate(key.platform, 'streamKey', e.target.value)}
                       placeholder="Paste your stream key here"
                       className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary font-mono focus:outline-none focus:border-accent/50 placeholder-text-secondary/20"
                     />
@@ -503,7 +643,7 @@ function RTMPSettings(): JSX.Element {
         disabled={saving}
         className="mt-3 px-5 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors disabled:opacity-50"
       >
-        {saving ? 'Saving...' : 'Save Stream Keys'}
+        {saving ? 'Saving...' : 'Save Settings'}
       </button>
     </section>
   )

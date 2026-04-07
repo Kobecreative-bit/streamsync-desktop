@@ -17,13 +17,18 @@ import {
 import {
   getStreamKeys,
   saveStreamKeys,
-  startRTMPStream,
+  getRTMPConfig,
+  saveRTMPConfig,
+  startMultiStream,
   stopRTMPStream,
   stopAllRTMPStreams,
   getRTMPStatuses,
   setStatusCallback,
   isFFmpegAvailable,
-  type StreamKey
+  listMediaDevices,
+  isStreaming,
+  type StreamKey,
+  type RTMPConfig
 } from './rtmp'
 
 let mainWindow: BrowserWindow | null = null
@@ -417,8 +422,21 @@ function setupIPC(): void {
     return keys
   })
 
-  ipcMain.handle('rtmp-start-stream', (_event, platform: string, serverUrl: string, streamKey: string) => {
-    return startRTMPStream(platform, serverUrl, streamKey)
+  ipcMain.handle('rtmp-get-config', () => {
+    return getRTMPConfig()
+  })
+
+  ipcMain.handle('rtmp-save-config', (_event, config: RTMPConfig) => {
+    saveRTMPConfig(config)
+    return config
+  })
+
+  ipcMain.handle('rtmp-list-devices', () => {
+    return listMediaDevices()
+  })
+
+  ipcMain.handle('rtmp-start-multistream', (_event, keys: StreamKey[]) => {
+    return startMultiStream(keys)
   })
 
   ipcMain.handle('rtmp-stop-stream', (_event, platform: string) => {
@@ -435,6 +453,10 @@ function setupIPC(): void {
 
   ipcMain.handle('rtmp-check-ffmpeg', async () => {
     return isFFmpegAvailable()
+  })
+
+  ipcMain.handle('rtmp-is-streaming', () => {
+    return isStreaming()
   })
 
   // Forward RTMP status updates to renderer

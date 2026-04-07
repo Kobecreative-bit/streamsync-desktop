@@ -196,16 +196,17 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
     seenCommentsRef.current.clear()
     emptyScrapeCyclesRef.current = 0
 
-    // Start RTMP streams for enabled platforms
+    // Start RTMP multi-stream: one camera feed to all enabled platforms
     try {
       const keys = await window.streamSync.rtmpGetStreamKeys()
-      for (const key of keys) {
-        if (key.enabled && key.streamKey && selectedPlatforms.includes(key.platform)) {
-          window.streamSync.rtmpStartStream(key.platform, key.serverUrl, key.streamKey)
-        }
+      const enabledKeys = keys.filter(
+        (k) => k.enabled && k.streamKey && selectedPlatforms.includes(k.platform)
+      )
+      if (enabledKeys.length > 0) {
+        window.streamSync.rtmpStartMultiStream(enabledKeys)
       }
     } catch {
-      // RTMP is optional — continue without it
+      // RTMP is optional — webview-only mode still works
     }
 
     scrapeIntervalRef.current = setInterval(async () => {
