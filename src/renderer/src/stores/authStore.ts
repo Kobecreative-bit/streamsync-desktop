@@ -46,6 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) throw error
       set({ user: data.user })
       await get().loadProfile()
+      if (data.user) window.streamSync?.setAuditUser?.(data.user.id)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Sign in failed'
       set({ error: message })
@@ -186,6 +187,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (data.session?.user) {
         set({ user: data.session.user })
         await get().loadProfile()
+        window.streamSync?.setAuditUser?.(data.session.user.id)
       }
     } catch (err) {
       console.error('Auth initialization error:', err)

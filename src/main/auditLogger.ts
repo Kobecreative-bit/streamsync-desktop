@@ -10,7 +10,13 @@ export interface AuditEntry {
   metadata?: Record<string, unknown>
 }
 
+let currentUserId = 'unknown'
+
 class AuditLogger {
+  setUserId(userId: string): void {
+    currentUserId = userId
+  }
+
   log(
     action: string,
     resource: string,
@@ -21,7 +27,7 @@ class AuditLogger {
     entries.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       timestamp: Date.now(),
-      userId: 'local-user',
+      userId: currentUserId,
       action,
       resource,
       details,

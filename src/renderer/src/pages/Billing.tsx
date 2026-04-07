@@ -231,7 +231,7 @@ function Billing({
                   ) : isEnterprise ? (
                     <button
                       onClick={() => {
-                        // Opens external browser to contact form
+                        window.open('mailto:hello@streamsync.dev?subject=Enterprise%20Plan%20Inquiry', '_blank')
                       }}
                       className="w-full py-2.5 text-sm font-medium text-text-primary bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors"
                     >

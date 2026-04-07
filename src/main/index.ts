@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 import { is } from '@electron-toolkit/utils'
 import { store } from './store'
 import type { Product } from './store'
-import { createCheckoutSession, createBillingPortalSession } from './stripe'
+import { createCheckoutSession, createBillingPortalSession, startWebhookServer, stopWebhookServer } from './stripe'
 import {
   exchangeCodeForToken,
   saveShopifyConnection,
@@ -14,6 +14,8 @@ import {
   fetchShopifyProducts,
   fetchShopifyOrders
 } from './shopify'
+import { startApiServer, stopApiServer } from './apiServer'
+import { auditLogger } from './auditLogger'
 import {
   getStreamKeys,
   saveStreamKeys,
@@ -303,6 +305,11 @@ function setupIPC(): void {
     return fetchShopifyOrders(conn, since)
   })
 
+  // --- Audit User ---
+  ipcMain.handle('set-audit-user', (_event, userId: string) => {
+    auditLogger.setUserId(userId)
+  })
+
   // --- Audit Log ---
   ipcMain.handle('get-audit-log', (_event, filter?: { action?: string; from?: number; to?: number }) => {
     const entries: Array<{
@@ -402,6 +409,21 @@ function setupIPC(): void {
     }
   })
 
+  // --- Image File Dialog ---
+  ipcMain.handle('open-image-dialog', async () => {
+    if (!mainWindow) return null
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Image',
+      filters: [
+        { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['openFile']
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
   // --- Replay Frame ---
   ipcMain.handle('replay-get-frame-base64', (_event, framePath: string) => {
     try {
@@ -470,6 +492,8 @@ app.whenReady().then(() => {
   setupMenu()
   setupIPC()
   createWindow()
+  startApiServer()
+  startWebhookServer()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -480,6 +504,8 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   stopAllRTMPStreams()
+  stopApiServer()
+  stopWebhookServer()
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -487,4 +513,6 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   stopAllRTMPStreams()
+  stopApiServer()
+  stopWebhookServer()
 })

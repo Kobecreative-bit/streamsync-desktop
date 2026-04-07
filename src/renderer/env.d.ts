@@ -101,6 +101,9 @@ interface StreamSyncAPI {
   shopifyFetchOrders: (since?: string) => Promise<ShopifyOrder[]>
   onShopifyCallback?: (callback: (event: unknown, url: string) => void) => void
 
+  // Audit User
+  setAuditUser: (userId: string) => Promise<void>
+
   // Audit Log
   getAuditLog: (filter?: { action?: string; from?: number; to?: number }) => Promise<AuditEntry[]>
 
@@ -120,6 +123,9 @@ interface StreamSyncAPI {
 
   // File Dialog
   openCsvDialog: () => Promise<string | null>
+
+  // Image File Dialog
+  openImageDialog: () => Promise<string | null>
 
   // Replay
   replayGetFrameBase64: (framePath: string) => Promise<string>

@@ -53,6 +53,10 @@ const api = {
     ipcRenderer.on('shopify-connected', (event, data) => callback(event, data))
   },
 
+  // Audit User
+  setAuditUser: (userId: string): Promise<void> =>
+    ipcRenderer.invoke('set-audit-user', userId),
+
   // Audit Log
   getAuditLog: (filter?: { action?: string; from?: number; to?: number }): Promise<AuditEntry[]> =>
     ipcRenderer.invoke('get-audit-log', filter),
@@ -82,6 +86,10 @@ const api = {
   // File Dialog
   openCsvDialog: (): Promise<string | null> =>
     ipcRenderer.invoke('open-csv-dialog'),
+
+  // Image File Dialog
+  openImageDialog: (): Promise<string | null> =>
+    ipcRenderer.invoke('open-image-dialog'),
 
   // Replay
   replayGetFrameBase64: (framePath: string): Promise<string> =>

@@ -40,9 +40,10 @@ export default function WhiteLabel(): JSX.Element {
   }
 
   const handleLogoUpload = async (): Promise<void> => {
-    const content = await window.streamSync.openCsvDialog() // Reuse file dialog for simplicity
-    // In a real implementation, this would use a proper image file picker
-    // For now, users can type a path
+    const filePath = await window.streamSync.openImageDialog()
+    if (filePath) {
+      setBranding((b) => ({ ...b, logoPath: filePath }))
+    }
   }
 
   if (loading) {
