@@ -51,11 +51,11 @@ const supportTiers: Record<
 > = {
   starter: {
     label: 'Email Support',
-    detail: 'hello@streamsync.live'
+    detail: 'hello@streamsync.dev'
   },
   pro: {
     label: 'Priority Support',
-    detail: 'priority@streamsync.live'
+    detail: 'priority@streamsync.dev'
   },
   enterprise: {
     label: '24/7 Phone Support',

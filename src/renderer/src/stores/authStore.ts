@@ -7,8 +7,11 @@ export interface UserProfile {
   id: string
   email: string
   display_name: string
+  avatar_url?: string
+  bio?: string
   plan: PlanTier
   team_id: string | null
+  onboarded: boolean
 }
 
 interface AuthState {
@@ -22,6 +25,8 @@ interface AuthState {
   loadProfile: () => Promise<void>
   initialize: () => Promise<void>
   clearError: () => void
+  markOnboarded: () => Promise<void>
+  updateProfile: (updates: { display_name?: string; avatar_url?: string; bio?: string }) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -68,7 +73,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           email,
           display_name: name,
           plan: 'starter',
-          team_id: null
+          team_id: null,
+          onboarded: false
         })
         if (profileError) {
           console.error('Failed to create profile:', profileError.message)
@@ -104,7 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, display_name, plan, team_id')
+        .select('id, email, display_name, avatar_url, bio, plan, team_id, onboarded')
         .eq('id', user.id)
         .single()
 
@@ -116,15 +122,60 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             email: user.email || '',
             display_name: user.user_metadata?.display_name || 'User',
             plan: 'starter',
-            team_id: null
+            team_id: null,
+            onboarded: false
           }
         })
         return
       }
 
-      set({ profile: data as UserProfile })
+      set({
+        profile: {
+          ...(data as UserProfile),
+          onboarded: data.onboarded ?? false
+        }
+      })
     } catch (err) {
       console.error('Profile load error:', err)
+    }
+  },
+
+  markOnboarded: async (): Promise<void> => {
+    const { user, profile } = get()
+    if (!user || !profile) return
+
+    // Update locally immediately
+    set({ profile: { ...profile, onboarded: true } })
+
+    // Persist to Supabase
+    try {
+      await supabase
+        .from('profiles')
+        .update({ onboarded: true })
+        .eq('id', user.id)
+    } catch (err) {
+      console.error('Failed to mark onboarded:', err)
+    }
+  },
+
+  updateProfile: async (updates: { display_name?: string; avatar_url?: string; bio?: string }): Promise<void> => {
+    const { user, profile } = get()
+    if (!user || !profile) return
+
+    // Update locally immediately
+    set({ profile: { ...profile, ...updates } })
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id)
+      if (error) throw error
+    } catch (err) {
+      console.error('Failed to update profile:', err)
+      // Revert on failure
+      set({ profile })
+      set({ error: 'Failed to update profile' })
     }
   },
 

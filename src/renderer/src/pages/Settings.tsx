@@ -4,9 +4,34 @@ import { usePlanStore } from '../stores/planStore'
 import { PLAN_FEATURES } from '../lib/planConfig'
 
 function Settings(): JSX.Element {
-  const { profile, signOut } = useAuthStore()
+  const { profile, signOut, updateProfile } = useAuthStore()
   const { plan } = usePlanStore()
   const planConfig = PLAN_FEATURES[plan]
+
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({
+    display_name: '',
+    avatar_url: '',
+    bio: ''
+  })
+  const [profileSaving, setProfileSaving] = useState(false)
+
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        display_name: profile.display_name || '',
+        avatar_url: profile.avatar_url || '',
+        bio: profile.bio || ''
+      })
+    }
+  }, [profile])
+
+  const handleSaveProfile = async (): Promise<void> => {
+    setProfileSaving(true)
+    await updateProfile(profileForm)
+    setProfileSaving(false)
+    setEditingProfile(false)
+  }
 
   const [settings, setSettings] = useState<AppSettings>({
     autoStartAllPlatforms: true,
@@ -34,7 +59,7 @@ function Settings(): JSX.Element {
   }
 
   const handleManageBilling = (): void => {
-    window.open('https://streamsync.live/billing', '_blank')
+    window.open('https://streamsync.dev/billing', '_blank')
   }
 
   return (
@@ -56,19 +81,109 @@ function Settings(): JSX.Element {
             </h2>
           </div>
           <div className="bg-bg-card rounded-xl border border-white/5">
-            {/* User info */}
-            <div className="flex items-center justify-between py-4 px-5 border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
-                  {(profile?.display_name || 'U').charAt(0).toUpperCase()}
+            {/* User info + Edit Profile */}
+            <div className="py-4 px-5 border-b border-white/5">
+              {!editingProfile ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
+                        {(profile?.display_name || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-text-primary">
+                        {profile?.display_name || 'User'}
+                      </p>
+                      <p className="text-xs text-text-secondary">{profile?.email || ''}</p>
+                      {profile?.bio && (
+                        <p className="text-xs text-text-secondary/60 mt-0.5">{profile.bio}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setEditingProfile(true)}
+                    className="px-3 py-1.5 text-xs font-medium text-accent bg-accent/10 hover:bg-accent/15 rounded-lg transition-colors"
+                  >
+                    Edit Profile
+                  </button>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    {profile?.display_name || 'User'}
-                  </p>
-                  <p className="text-xs text-text-secondary">{profile?.email || ''}</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 mb-4">
+                    {profileForm.avatar_url ? (
+                      <img
+                        src={profileForm.avatar_url}
+                        alt=""
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-lg">
+                        {(profileForm.display_name || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-xs text-text-secondary mb-1">Avatar URL</p>
+                      <input
+                        type="url"
+                        value={profileForm.avatar_url}
+                        onChange={(e) => setProfileForm((f) => ({ ...f, avatar_url: e.target.value }))}
+                        placeholder="https://example.com/avatar.jpg"
+                        className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary placeholder-text-secondary/30 focus:outline-none focus:border-accent/50"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary mb-1">Display Name</p>
+                    <input
+                      type="text"
+                      value={profileForm.display_name}
+                      onChange={(e) => setProfileForm((f) => ({ ...f, display_name: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent/50"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary mb-1">Bio</p>
+                    <textarea
+                      value={profileForm.bio}
+                      onChange={(e) => setProfileForm((f) => ({ ...f, bio: e.target.value }))}
+                      placeholder="Tell viewers about yourself..."
+                      rows={2}
+                      className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary placeholder-text-secondary/30 focus:outline-none focus:border-accent/50 resize-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={profileSaving}
+                      className="px-4 py-1.5 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {profileSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingProfile(false)
+                        if (profile) {
+                          setProfileForm({
+                            display_name: profile.display_name || '',
+                            avatar_url: profile.avatar_url || '',
+                            bio: profile.bio || ''
+                          })
+                        }
+                      }}
+                      className="px-4 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Current plan */}
@@ -161,6 +276,9 @@ function Settings(): JSX.Element {
             />
           </div>
         </section>
+
+        {/* RTMP Stream Keys */}
+        <RTMPSettings />
 
         {/* AI Copilot Settings */}
         <section className="mb-8">
@@ -255,6 +373,139 @@ function ToggleRow({ label, description, checked, onChange }: ToggleRowProps): J
         />
       </button>
     </div>
+  )
+}
+
+const PLATFORM_LABELS: Record<string, { name: string; color: string }> = {
+  tiktok: { name: 'TikTok', color: '#ff0050' },
+  youtube: { name: 'YouTube', color: '#ff0000' },
+  instagram: { name: 'Instagram', color: '#e1306c' },
+  facebook: { name: 'Facebook', color: '#1877f2' }
+}
+
+function RTMPSettings(): JSX.Element {
+  const [keys, setKeys] = useState<RTMPStreamKey[]>([])
+  const [ffmpegOk, setFfmpegOk] = useState<boolean | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [showKeys, setShowKeys] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    window.streamSync.rtmpGetStreamKeys().then(setKeys)
+    window.streamSync.rtmpCheckFFmpeg().then(setFfmpegOk)
+  }, [])
+
+  const handleUpdate = (platform: string, field: string, value: string | boolean): void => {
+    setKeys((prev) =>
+      prev.map((k) => (k.platform === platform ? { ...k, [field]: value } : k))
+    )
+  }
+
+  const handleSave = async (): Promise<void> => {
+    setSaving(true)
+    await window.streamSync.rtmpSaveStreamKeys(keys)
+    setSaving(false)
+  }
+
+  return (
+    <section className="mb-8">
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="w-7 h-7 rounded-md bg-white/5 flex items-center justify-center">
+          <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9.172 15.828a5 5 0 010-7.072m5.656 0a5 5 0 010 7.072M12 12h.01" />
+          </svg>
+        </div>
+        <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
+          RTMP Stream Keys
+        </h2>
+        {ffmpegOk === false && (
+          <span className="ml-auto text-[10px] text-danger bg-danger/10 px-2 py-0.5 rounded-full font-medium">
+            FFmpeg not found
+          </span>
+        )}
+        {ffmpegOk === true && (
+          <span className="ml-auto text-[10px] text-success bg-success/10 px-2 py-0.5 rounded-full font-medium">
+            FFmpeg ready
+          </span>
+        )}
+      </div>
+
+      {ffmpegOk === false && (
+        <div className="mb-3 p-3 rounded-lg bg-danger/5 border border-danger/10">
+          <p className="text-xs text-danger/80">
+            FFmpeg is required for RTMP streaming. Install it via{' '}
+            <span className="font-mono bg-danger/10 px-1 rounded">brew install ffmpeg</span> (macOS) or download from ffmpeg.org.
+          </p>
+        </div>
+      )}
+
+      <div className="bg-bg-card rounded-xl border border-white/5 divide-y divide-white/5">
+        {keys.map((key) => {
+          const config = PLATFORM_LABELS[key.platform]
+          const isVisible = showKeys[key.platform] ?? false
+          return (
+            <div key={key.platform} className="px-5 py-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: config.color }} />
+                  <span className="text-sm font-medium text-text-primary">{config.name}</span>
+                </div>
+                <button
+                  onClick={() => handleUpdate(key.platform, 'enabled', !key.enabled)}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
+                    key.enabled ? 'bg-accent' : 'bg-white/10'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                      key.enabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {key.enabled && (
+                <div className="space-y-2 animate-fadeIn">
+                  <div>
+                    <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 block">Server URL</label>
+                    <input
+                      type="text"
+                      value={key.serverUrl}
+                      onChange={(e) => handleUpdate(key.platform, 'serverUrl', e.target.value)}
+                      className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary font-mono focus:outline-none focus:border-accent/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-text-secondary/60 uppercase tracking-wider mb-1 flex items-center justify-between">
+                      <span>Stream Key</span>
+                      <button
+                        onClick={() => setShowKeys((prev) => ({ ...prev, [key.platform]: !isVisible }))}
+                        className="text-text-secondary/40 hover:text-text-secondary transition-colors"
+                      >
+                        {isVisible ? 'Hide' : 'Show'}
+                      </button>
+                    </label>
+                    <input
+                      type={isVisible ? 'text' : 'password'}
+                      value={key.streamKey}
+                      onChange={(e) => handleUpdate(key.platform, 'streamKey', e.target.value)}
+                      placeholder="Paste your stream key here"
+                      className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-text-primary font-mono focus:outline-none focus:border-accent/50 placeholder-text-secondary/20"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="mt-3 px-5 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors disabled:opacity-50"
+      >
+        {saving ? 'Saving...' : 'Save Stream Keys'}
+      </button>
+    </section>
   )
 }
 

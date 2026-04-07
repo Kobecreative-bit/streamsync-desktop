@@ -17,7 +17,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #111827;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -40,8 +40,35 @@ body {
   }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+@keyframes scanPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 .animate-slideUp {
   animation: slideUp 0.3s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-scanPulse {
+  animation: scanPulse 1.5s ease-in-out infinite;
 }
 
 .line-clamp-2 {
@@ -49,4 +76,21 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Premium glass effect for panels */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Stream panel hover overlay */
+.stream-panel-controls {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.stream-panel:hover .stream-panel-controls {
+  opacity: 1;
 }

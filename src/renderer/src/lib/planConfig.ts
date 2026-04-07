@@ -26,7 +26,7 @@ interface PlanConfig {
 export const PLAN_FEATURES: Record<PlanTier, PlanConfig> = {
   starter: {
     label: 'Starter',
-    price: 0,
+    price: 23,
     features: {
       max_platforms: 2,
       max_products: 10,
@@ -47,7 +47,7 @@ export const PLAN_FEATURES: Record<PlanTier, PlanConfig> = {
   },
   pro: {
     label: 'Pro',
-    price: 49,
+    price: 63,
     features: {
       max_platforms: 4,
       max_products: Infinity,
@@ -68,7 +68,7 @@ export const PLAN_FEATURES: Record<PlanTier, PlanConfig> = {
   },
   enterprise: {
     label: 'Enterprise',
-    price: 199,
+    price: 159,
     features: {
       max_platforms: 4,
       max_products: Infinity,

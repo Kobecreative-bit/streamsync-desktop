@@ -70,7 +70,7 @@ function StreamPanel({ platform, pinnedProduct, isLive, onWebviewReady }: Stream
     webview.setAttribute('useragent', USER_AGENT)
     webview.style.width = '100%'
     webview.style.height = '100%'
-    webview.style.borderRadius = '0 0 8px 8px'
+    webview.style.borderRadius = '0 0 12px 12px'
 
     webview.addEventListener('did-start-loading', () => {
       setLoading(true)
@@ -123,77 +123,94 @@ function StreamPanel({ platform, pinnedProduct, isLive, onWebviewReady }: Stream
   }
 
   return (
-    <div className="flex flex-col bg-bg-card rounded-2xl border border-white/5 overflow-hidden flex-1 min-w-[220px] max-w-[320px]">
-      {/* Header */}
-      <div
-        className="h-10 flex items-center justify-between px-3 shrink-0"
-        style={{ backgroundColor: config.color + '10' }}
-      >
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.color }} />
-          <span className="text-xs font-bold text-text-primary">{config.name}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && (
-            <div className="w-3 h-3 border-2 border-text-secondary/30 border-t-text-secondary rounded-full animate-spin" />
-          )}
-          <button
-            onClick={handleRefresh}
-            className="text-text-secondary hover:text-text-primary transition-colors p-1 rounded-md hover:bg-white/5"
-            title="Refresh"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+    <div className="stream-panel flex flex-col bg-bg-card rounded-2xl border border-white/[0.06] overflow-hidden flex-1 min-w-[280px] shadow-lg shadow-black/20">
+      {/* Header — colored top border + platform info */}
+      <div className="relative shrink-0">
+        {/* Colored top accent line */}
+        <div
+          className="h-[2px] w-full"
+          style={{ backgroundColor: config.color }}
+        />
+        <div className="h-11 flex items-center justify-between px-3.5 bg-bg-secondary/40">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: isLive ? '#22c55e' : config.color + '60' }}
+            />
+            <span className="text-xs font-bold text-text-primary tracking-wide">{config.name}</span>
+            {isLive && (
+              <span className="text-[9px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded">
+                LIVE
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {loading && (
+              <div className="w-3.5 h-3.5 border-2 border-text-secondary/20 border-t-text-secondary rounded-full animate-spin" />
+            )}
+            {/* Hover-to-reveal controls */}
+            <div className="stream-panel-controls flex items-center gap-0.5">
+              <button
+                onClick={handleRefresh}
+                className="text-text-secondary hover:text-text-primary transition-colors p-1.5 rounded-md hover:bg-white/5"
+                title="Refresh"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Webview Container */}
       <div className="flex-1 relative min-h-0" ref={containerRef}>
         {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/90 z-10 p-4">
-            <svg className="w-8 h-8 text-text-secondary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/95 z-10 p-6">
+            <svg className="w-10 h-10 text-text-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
-            <p className="text-text-secondary text-xs text-center mb-3">{error}</p>
+            <p className="text-text-secondary text-xs text-center mb-4 max-w-[200px]">{error}</p>
             <button
               onClick={handleRetry}
-              className="px-4 py-1.5 bg-accent rounded-lg text-white text-xs font-medium hover:bg-accent/80 transition-colors"
+              className="px-5 py-2 bg-accent rounded-lg text-white text-xs font-semibold hover:bg-accent/80 transition-colors"
             >
               Retry
             </button>
           </div>
         )}
 
-        {/* Product Overlay */}
+        {/* Product Overlay — slide-up card */}
         {pinnedProduct && isLive && (
-          <div className="absolute bottom-2 left-2 right-2 z-20 bg-bg-card/95 backdrop-blur-sm rounded-lg border border-white/10 p-2.5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
-                {getCategoryIcon(pinnedProduct.emoji)}
+          <div className="absolute bottom-3 left-3 right-3 z-20 animate-slideUp">
+            <div className="bg-bg-card/95 backdrop-blur-md rounded-xl border border-white/10 p-3 shadow-xl shadow-black/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                  {getCategoryIcon(pinnedProduct.emoji)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-text-primary truncate">{pinnedProduct.name}</p>
+                  <p className="text-accent text-sm font-bold">${pinnedProduct.price.toFixed(2)}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-text-primary truncate">{pinnedProduct.name}</p>
-                <p className="text-accent text-xs font-bold">${pinnedProduct.price.toFixed(2)}</p>
-              </div>
+              <button className="w-full mt-2.5 py-2 bg-accent rounded-lg text-white text-[11px] font-bold hover:bg-accent/80 transition-colors shadow-sm shadow-accent/20">
+                Buy Now
+              </button>
             </div>
-            <button className="w-full mt-2 py-1.5 bg-accent rounded-md text-white text-[10px] font-bold hover:bg-accent/80 transition-colors">
-              Buy Now
-            </button>
           </div>
         )}
       </div>
 
       {/* Bottom Status Bar */}
-      <div className="h-8 flex items-center justify-center shrink-0 border-t border-white/5">
+      <div className="h-8 flex items-center justify-center shrink-0 border-t border-white/[0.04] bg-bg-secondary/20">
         {isLive ? (
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            <span className="text-[10px] font-semibold text-success">LIVE</span>
+            <span className="text-[10px] font-semibold text-success">Connected</span>
           </div>
         ) : (
-          <span className="text-[10px] text-text-secondary">Ready</span>
+          <span className="text-[10px] text-text-secondary/60">Ready to stream</span>
         )}
       </div>
     </div>

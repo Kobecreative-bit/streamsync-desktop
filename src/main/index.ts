@@ -14,6 +14,17 @@ import {
   fetchShopifyProducts,
   fetchShopifyOrders
 } from './shopify'
+import {
+  getStreamKeys,
+  saveStreamKeys,
+  startRTMPStream,
+  stopRTMPStream,
+  stopAllRTMPStreams,
+  getRTMPStatuses,
+  setStatusCallback,
+  isFFmpegAvailable,
+  type StreamKey
+} from './rtmp'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -167,7 +178,7 @@ function setupMenu(): void {
         {
           label: 'Documentation',
           click: (): void => {
-            shell.openExternal('https://streamsync.live')
+            shell.openExternal('https://streamsync.dev')
           }
         }
       ]
@@ -395,6 +406,41 @@ function setupIPC(): void {
       return ''
     }
   })
+
+  // --- RTMP Streaming ---
+  ipcMain.handle('rtmp-get-stream-keys', () => {
+    return getStreamKeys()
+  })
+
+  ipcMain.handle('rtmp-save-stream-keys', (_event, keys: StreamKey[]) => {
+    saveStreamKeys(keys)
+    return keys
+  })
+
+  ipcMain.handle('rtmp-start-stream', (_event, platform: string, serverUrl: string, streamKey: string) => {
+    return startRTMPStream(platform, serverUrl, streamKey)
+  })
+
+  ipcMain.handle('rtmp-stop-stream', (_event, platform: string) => {
+    stopRTMPStream(platform)
+  })
+
+  ipcMain.handle('rtmp-stop-all', () => {
+    stopAllRTMPStreams()
+  })
+
+  ipcMain.handle('rtmp-get-statuses', () => {
+    return getRTMPStatuses()
+  })
+
+  ipcMain.handle('rtmp-check-ffmpeg', async () => {
+    return isFFmpegAvailable()
+  })
+
+  // Forward RTMP status updates to renderer
+  setStatusCallback((statuses) => {
+    mainWindow?.webContents.send('rtmp-status-update', statuses)
+  })
 }
 
 app.whenReady().then(() => {
@@ -411,7 +457,12 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  stopAllRTMPStreams()
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  stopAllRTMPStreams()
 })

@@ -123,6 +123,29 @@ interface StreamSyncAPI {
 
   // Replay
   replayGetFrameBase64: (framePath: string) => Promise<string>
+
+  // RTMP Streaming
+  rtmpGetStreamKeys: () => Promise<RTMPStreamKey[]>
+  rtmpSaveStreamKeys: (keys: RTMPStreamKey[]) => Promise<RTMPStreamKey[]>
+  rtmpStartStream: (platform: string, serverUrl: string, streamKey: string) => Promise<boolean>
+  rtmpStopStream: (platform: string) => Promise<void>
+  rtmpStopAll: () => Promise<void>
+  rtmpGetStatuses: () => Promise<RTMPStatus[]>
+  rtmpCheckFFmpeg: () => Promise<boolean>
+  onRTMPStatusUpdate: (callback: (statuses: RTMPStatus[]) => void) => void
+}
+
+interface RTMPStreamKey {
+  platform: 'tiktok' | 'youtube' | 'instagram' | 'facebook'
+  serverUrl: string
+  streamKey: string
+  enabled: boolean
+}
+
+interface RTMPStatus {
+  platform: string
+  status: 'idle' | 'connecting' | 'live' | 'error'
+  error?: string
 }
 
 interface Product {
@@ -184,6 +207,8 @@ interface UserProfile {
   id: string
   email: string
   display_name: string
+  avatar_url?: string
+  bio?: string
   plan: PlanTier
   team_id: string | null
 }

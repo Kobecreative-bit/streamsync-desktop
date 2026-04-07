@@ -28,8 +28,8 @@ export async function createCheckoutSession(params: {
     customer_email: params.customerId ? undefined : params.email,
     customer: params.customerId || undefined,
     line_items: [{ price: params.priceId, quantity: 1 }],
-    success_url: params.successUrl || 'https://streamsync.live/success',
-    cancel_url: params.cancelUrl || 'https://streamsync.live/cancel'
+    success_url: params.successUrl || 'https://streamsync.dev/success',
+    cancel_url: params.cancelUrl || 'https://streamsync.dev/cancel'
   })
 
   return session.url
@@ -41,7 +41,7 @@ export async function createBillingPortalSession(customerId: string): Promise<st
 
   const session = await s.billingPortal.sessions.create({
     customer: customerId,
-    return_url: 'https://streamsync.live'
+    return_url: 'https://streamsync.dev'
   })
 
   return session.url

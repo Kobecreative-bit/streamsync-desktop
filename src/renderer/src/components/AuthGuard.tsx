@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
+import OnboardingFlow from './OnboardingFlow'
 
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
 function AuthGuard({ children }: AuthGuardProps): JSX.Element {
-  const { user, loading, initialize } = useAuthStore()
-  const [authPage, setAuthPage] = useState<'login' | 'register'>('login')
+  const { user, profile, loading, initialize, markOnboarded } = useAuthStore()
+  const [authPage, setAuthPage] = useState<'login' | 'register'>('register')
 
   useEffect(() => {
     initialize()
@@ -19,7 +20,7 @@ function AuthGuard({ children }: AuthGuardProps): JSX.Element {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg-primary">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center shadow-lg shadow-accent/20">
             <svg
               className="w-6 h-6 text-white"
               viewBox="0 0 24 24"
@@ -56,11 +57,23 @@ function AuthGuard({ children }: AuthGuardProps): JSX.Element {
     )
   }
 
+  // Not authenticated — show login/register
   if (!user) {
-    if (authPage === 'register') {
-      return <Register onNavigateToLogin={() => setAuthPage('login')} />
+    if (authPage === 'login') {
+      return <Login onNavigateToRegister={() => setAuthPage('register')} />
     }
-    return <Login onNavigateToRegister={() => setAuthPage('register')} />
+    return <Register onNavigateToLogin={() => setAuthPage('login')} />
+  }
+
+  // Authenticated but not onboarded — show onboarding flow
+  if (profile && !profile.onboarded) {
+    return (
+      <OnboardingFlow
+        onComplete={() => {
+          markOnboarded()
+        }}
+      />
+    )
   }
 
   return <>{children}</>

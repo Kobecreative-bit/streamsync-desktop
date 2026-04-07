@@ -32,7 +32,7 @@ function UpgradeModal({ feature, currentPlan, requiredPlan, onClose }: UpgradeMo
 
   const handleUpgrade = (): void => {
     // Will integrate with Stripe billing in a future phase
-    window.open('https://streamsync.live/pricing', '_blank')
+    window.open('https://streamsync.dev/pricing', '_blank')
   }
 
   return (

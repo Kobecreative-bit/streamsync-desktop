@@ -85,7 +85,26 @@ const api = {
 
   // Replay
   replayGetFrameBase64: (framePath: string): Promise<string> =>
-    ipcRenderer.invoke('replay-get-frame-base64', framePath)
+    ipcRenderer.invoke('replay-get-frame-base64', framePath),
+
+  // RTMP Streaming
+  rtmpGetStreamKeys: (): Promise<RTMPStreamKey[]> =>
+    ipcRenderer.invoke('rtmp-get-stream-keys'),
+  rtmpSaveStreamKeys: (keys: RTMPStreamKey[]): Promise<RTMPStreamKey[]> =>
+    ipcRenderer.invoke('rtmp-save-stream-keys', keys),
+  rtmpStartStream: (platform: string, serverUrl: string, streamKey: string): Promise<boolean> =>
+    ipcRenderer.invoke('rtmp-start-stream', platform, serverUrl, streamKey),
+  rtmpStopStream: (platform: string): Promise<void> =>
+    ipcRenderer.invoke('rtmp-stop-stream', platform),
+  rtmpStopAll: (): Promise<void> =>
+    ipcRenderer.invoke('rtmp-stop-all'),
+  rtmpGetStatuses: (): Promise<RTMPStatus[]> =>
+    ipcRenderer.invoke('rtmp-get-statuses'),
+  rtmpCheckFFmpeg: (): Promise<boolean> =>
+    ipcRenderer.invoke('rtmp-check-ffmpeg'),
+  onRTMPStatusUpdate: (callback: (statuses: RTMPStatus[]) => void): void => {
+    ipcRenderer.on('rtmp-status-update', (_event, statuses) => callback(statuses))
+  }
 }
 
 interface ShopifyConnection {
@@ -154,6 +173,19 @@ interface StreamSession {
 interface RevenueEntry {
   date: string
   amount: number
+}
+
+interface RTMPStreamKey {
+  platform: 'tiktok' | 'youtube' | 'instagram' | 'facebook'
+  serverUrl: string
+  streamKey: string
+  enabled: boolean
+}
+
+interface RTMPStatus {
+  platform: string
+  status: 'idle' | 'connecting' | 'live' | 'error'
+  error?: string
 }
 
 interface Product {
