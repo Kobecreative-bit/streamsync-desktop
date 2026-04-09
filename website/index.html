@@ -4,174 +4,484 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StreamSync — Go Live Everywhere. Sell Anything.</title>
-  <meta name="description" content="StreamSync lets you go live on TikTok, YouTube, Instagram, and Facebook simultaneously with AI-powered selling tools. Download free." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23f97316'/><text x='50' y='68' font-size='50' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>S</text></svg>" />
+  <meta name="description" content="Stream to TikTok, YouTube, Instagram, and Facebook simultaneously. AI detects buying signals in real-time so you never miss a sale." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300d4ff'/><stop offset='100%25' stop-color='%238b5cf6'/></linearGradient></defs><rect rx='22' width='100' height='100' fill='url(%23g)'/><text x='50' y='68' font-size='52' font-weight='900' fill='white' text-anchor='middle' font-family='system-ui'>S</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #06080f; --bg2: #0c1021; --bg3: #141829; --card: #161b2e;
-      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
-      --accent: #f97316; --accent2: #ea580c;
-      --t1: #f1f5f9; --t2: #94a3b8; --t3: #64748b;
-      --tiktok: #ff0050; --youtube: #ff0000; --instagram: #e1306c; --facebook: #1877f2;
-      --success: #22c55e; --danger: #ef4444;
+      --bg: #080c18;
+      --bg2: #0c1128;
+      --bg3: #111630;
+      --card: rgba(255,255,255,0.03);
+      --card2: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --cyan: #00d4ff;
+      --cyan2: #00b8e0;
+      --purple: #8b5cf6;
+      --purple2: #7c3aed;
+      --pink: #ec4899;
+      --t1: #f1f5f9;
+      --t2: #94a3b8;
+      --t3: #475569;
+      --tiktok: #ff0050;
+      --youtube: #ff0000;
+      --instagram: #e1306c;
+      --facebook: #1877f2;
+      --success: #10b981;
     }
+
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--t1); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
     a { color: inherit; text-decoration: none; }
+
+    /* NOISE TEXTURE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.6;
+    }
+
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-    /* NAV */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(6,8,15,0.85); backdrop-filter: blur(24px) saturate(1.4); border-bottom: 1px solid var(--border); }
-    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; }
-    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
-    .nav-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #f97316, #ea580c); display: flex; align-items: center; justify-content: center; }
-    .nav-logo-icon svg { width: 16px; height: 16px; color: white; }
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      background: rgba(8,12,24,0.7);
+      backdrop-filter: blur(24px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.03em; }
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(0,212,255,0.25);
+    }
+    .logo-mark svg { width: 16px; height: 16px; color: white; }
+    .logo-text { background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-links a { font-size: 13px; color: var(--t3); font-weight: 500; transition: color 0.2s; letter-spacing: -0.01em; }
+    .nav-links a { font-size: 13px; color: var(--t3); font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--t1); }
+    .btn-nav {
+      padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: white; border: none; cursor: pointer; font-family: inherit;
+      box-shadow: 0 0 20px rgba(0,212,255,0.2);
+      transition: all 0.2s; letter-spacing: -0.01em;
+    }
+    .btn-nav:hover { box-shadow: 0 0 32px rgba(0,212,255,0.35); transform: translateY(-1px); }
 
-    /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 10px; font-weight: 600; font-size: 13px; transition: all 0.2s; border: none; cursor: pointer; letter-spacing: -0.01em; font-family: inherit; }
-    .btn-primary { background: var(--accent); color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(249,115,22,0.3); }
-    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(249,115,22,0.25); }
-    .btn-ghost { background: rgba(255,255,255,0.04); color: var(--t1); border: 1px solid var(--border2); }
-    .btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
-    .btn-lg { padding: 14px 28px; font-size: 14px; border-radius: 12px; font-weight: 700; }
+    /* ── BUTTONS ── */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; transition: all 0.2s; border: none; cursor: pointer; letter-spacing: -0.01em; font-family: inherit; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
+      color: white;
+      box-shadow: 0 0 32px rgba(0,212,255,0.25), 0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+    .btn-primary:hover { box-shadow: 0 0 48px rgba(0,212,255,0.4); transform: translateY(-2px); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      color: var(--t1);
+      border: 1px solid var(--border2);
+      backdrop-filter: blur(8px);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+    .btn-lg { padding: 16px 32px; font-size: 16px; border-radius: 12px; }
 
-    /* HERO */
-    .hero { padding: 140px 24px 80px; text-align: center; position: relative; overflow: hidden; }
-    .hero::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 1000px; height: 800px; background: radial-gradient(ellipse, rgba(249,115,22,0.06) 0%, transparent 60%); pointer-events: none; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 100px; background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.15); font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 28px; letter-spacing: -0.01em; }
-    .hero-badge svg { width: 14px; height: 14px; }
-    .hero h1 { font-size: clamp(38px, 5.5vw, 64px); font-weight: 900; line-height: 1.05; letter-spacing: -0.04em; margin-bottom: 18px; }
-    .hero h1 .grad { background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero p { font-size: 17px; color: var(--t2); max-width: 520px; margin: 0 auto 36px; line-height: 1.7; letter-spacing: -0.01em; }
-    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
-    .hero-platforms { display: flex; gap: 20px; justify-content: center; align-items: center; margin-bottom: 56px; }
-    .hero-platform { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--t3); font-weight: 500; }
-    .hero-platform .dot { width: 6px; height: 6px; border-radius: 50%; }
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; padding: 160px 24px 80px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    /* Radial glow blobs */
+    .hero-glow-1 {
+      position: absolute; top: -100px; left: -200px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(0,212,255,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute; top: 0; right: -200px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    /* Perspective grid */
+    .hero-grid {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 380px;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+      transform: perspective(500px) rotateX(55deg) translateY(40px);
+      transform-origin: bottom center;
+      mask-image: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 70%);
+      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-    /* APP MOCKUP */
-    .mockup-wrap { max-width: 1100px; margin: 0 auto; position: relative; }
-    .mockup { border-radius: 16px; overflow: hidden; border: 1px solid var(--border); background: var(--bg2); box-shadow: 0 32px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset; }
-    .mockup-bar { height: 36px; background: var(--bg3); display: flex; align-items: center; padding: 0 14px; gap: 6px; border-bottom: 1px solid var(--border); }
-    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .mockup-body { display: flex; height: 480px; }
-    .mockup-sidebar { width: 180px; background: var(--bg2); border-right: 1px solid var(--border); padding: 16px 10px; }
-    .mockup-sidebar .mlogo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; margin-bottom: 20px; padding: 0 6px; }
-    .mockup-sidebar .mlogo-icon { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(135deg, #f97316, #ea580c); }
-    .m-nav-item { padding: 7px 10px; border-radius: 6px; font-size: 12px; color: var(--t3); margin-bottom: 1px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
-    .m-nav-item.active { background: rgba(255,255,255,0.06); color: var(--t1); }
-    .m-nav-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
-    .mockup-main { flex: 1; display: flex; flex-direction: column; }
-    .mockup-controls { height: 44px; display: flex; align-items: center; justify-content: center; gap: 16px; border-bottom: 1px solid var(--border); padding: 0 12px; }
-    .mockup-live-btn { padding: 6px 16px; border-radius: 8px; background: var(--accent); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
-    .mockup-live-btn .live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; }
-    .mockup-timer { font-size: 11px; color: var(--t3); font-family: 'SF Mono', 'Fira Code', monospace; letter-spacing: 0.05em; }
-    .mockup-viewers { font-size: 11px; color: var(--t3); display: flex; align-items: center; gap: 4px; }
-    .mockup-streams { flex: 1; display: flex; gap: 6px; padding: 6px; overflow: hidden; }
-    .m-phone { flex: 1; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); }
-    .m-phone-head { height: 28px; display: flex; align-items: center; padding: 0 8px; gap: 5px; font-size: 10px; font-weight: 700; color: var(--t1); }
-    .m-phone-head .pdot { width: 5px; height: 5px; border-radius: 50%; }
-    .m-phone-body { flex: 1; background: var(--bg); display: flex; align-items: center; justify-content: center; position: relative; }
-    .m-phone-body .placeholder { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; }
-    .m-phone-body .placeholder svg { width: 18px; height: 18px; color: var(--t3); opacity: 0.5; }
-    .m-phone-foot { height: 22px; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 8px; font-weight: 700; color: var(--success); border-top: 1px solid var(--border); }
-    .m-phone-foot .ldot { width: 4px; height: 4px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
-    /* Product overlay in mockup */
-    .m-overlay { position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(22,27,46,0.95); backdrop-filter: blur(8px); border-radius: 6px; border: 1px solid var(--border2); padding: 5px 7px; display: flex; align-items: center; gap: 6px; }
-    .m-overlay-icon { width: 20px; height: 20px; border-radius: 4px; background: rgba(249,115,22,0.1); display: flex; align-items: center; justify-content: center; }
-    .m-overlay-icon svg { width: 10px; height: 10px; color: var(--accent); }
-    .m-overlay-info { flex: 1; min-width: 0; }
-    .m-overlay-name { font-size: 8px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .m-overlay-price { font-size: 8px; font-weight: 700; color: var(--accent); }
-    .m-overlay-btn { padding: 2px 6px; border-radius: 3px; background: var(--accent); color: white; font-size: 7px; font-weight: 700; white-space: nowrap; }
-    .mockup-panel { width: 220px; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
-    .m-tabs { display: flex; border-bottom: 1px solid var(--border); }
-    .m-tab { flex: 1; padding: 8px 0; font-size: 10px; font-weight: 600; color: var(--t3); text-align: center; position: relative; }
-    .m-tab.active { color: var(--accent); }
-    .m-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
-    .m-comments { flex: 1; padding: 8px; overflow: hidden; }
-    .m-comment { display: flex; gap: 6px; padding: 4px 0; align-items: flex-start; }
-    .m-comment-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; color: white; flex-shrink: 0; }
-    .m-comment-text { font-size: 10px; color: var(--t2); line-height: 1.4; }
-    .m-comment-text strong { color: var(--t1); font-weight: 600; }
-    .m-signal { display: inline-flex; align-items: center; gap: 2px; font-size: 7px; padding: 1px 4px; border-radius: 3px; background: rgba(249,115,22,0.12); color: var(--accent); font-weight: 700; margin-left: 3px; vertical-align: middle; }
-    .m-signal svg { width: 7px; height: 7px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 100px;
+      background: rgba(0,212,255,0.07);
+      border: 1px solid rgba(0,212,255,0.18);
+      font-size: 12px; font-weight: 600; color: var(--cyan);
+      margin-bottom: 32px; letter-spacing: 0.02em;
+      position: relative; z-index: 2;
+    }
+    .hero-badge .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); animation: pulse-dot 2s infinite; }
+    .hero h1 {
+      font-size: clamp(44px, 6.5vw, 80px);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.05em;
+      margin-bottom: 20px;
+      position: relative; z-index: 2;
+    }
+    .h1-line1 { display: block; color: var(--t1); }
+    .h1-grad { background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 50%, var(--pink) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p {
+      font-size: 18px; color: var(--t2); max-width: 540px; margin: 0 auto 40px;
+      line-height: 1.7; letter-spacing: -0.01em; position: relative; z-index: 2;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; position: relative; z-index: 2; }
 
-    /* SECTIONS */
-    .section { padding: 100px 24px; }
-    .section-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
-    .section h2 { font-size: clamp(28px, 3.5vw, 40px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.03em; }
-    .section .subtitle { font-size: 16px; color: var(--t2); max-width: 520px; margin-bottom: 48px; letter-spacing: -0.01em; }
+    /* Floating platform icons */
+    .platform-orbit {
+      position: relative; z-index: 2;
+      display: flex; gap: 16px; justify-content: center; align-items: center; margin-bottom: 72px;
+    }
+    .plat-icon {
+      width: 64px; height: 64px; border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      font-size: 28px; font-weight: 900;
+      transition: transform 0.3s; cursor: default;
+    }
+    .plat-icon:hover { transform: translateY(-6px) scale(1.05); }
+    .plat-tiktok { background: rgba(255,0,80,0.1); box-shadow: 0 0 24px rgba(255,0,80,0.15); }
+    .plat-youtube { background: rgba(255,0,0,0.1); box-shadow: 0 0 24px rgba(255,0,0,0.15); }
+    .plat-instagram { background: rgba(225,48,108,0.1); box-shadow: 0 0 24px rgba(225,48,108,0.15); }
+    .plat-facebook { background: rgba(24,119,242,0.1); box-shadow: 0 0 24px rgba(24,119,242,0.15); }
 
-    /* FEATURES */
-    .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .feat-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 28px; transition: border-color 0.3s, transform 0.3s; }
-    .feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-    .feat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
-    .feat-icon svg { width: 20px; height: 20px; }
-    .feat-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .feat-card p { font-size: 13px; color: var(--t2); line-height: 1.7; }
+    /* ── APP MOCKUP ── */
+    .mockup-container {
+      position: relative; z-index: 2;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .mockup-glow {
+      position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+      width: 900px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,212,255,0.1) 0%, rgba(139,92,246,0.06) 50%, transparent 70%);
+      pointer-events: none;
+    }
+    .mockup {
+      border-radius: 16px;
+      border: 1px solid rgba(0,212,255,0.12);
+      background: rgba(12,17,40,0.85);
+      backdrop-filter: blur(32px);
+      box-shadow:
+        0 0 0 1px rgba(0,212,255,0.06) inset,
+        0 40px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(0,212,255,0.06);
+      overflow: hidden;
+    }
+    .mockup-titlebar {
+      height: 40px; background: rgba(8,12,24,0.8);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 16px; gap: 8px;
+    }
+    .tb-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .tb-title { flex: 1; text-align: center; font-size: 12px; color: var(--t3); font-weight: 600; letter-spacing: 0.02em; }
+    .mockup-body { display: flex; height: 460px; }
 
-    /* HOW IT WORKS */
-    .steps-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-    .step-num { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; margin-bottom: 18px; }
-    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .step p { font-size: 13px; color: var(--t2); line-height: 1.7; }
+    /* Sidebar */
+    .mock-sidebar {
+      width: 168px; background: rgba(8,12,24,0.6);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      display: flex; flex-direction: column;
+    }
+    .mock-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; padding: 0 4px; }
+    .mock-logo-icon { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg, var(--cyan), var(--purple)); box-shadow: 0 0 12px rgba(0,212,255,0.3); }
+    .mock-logo-text { font-size: 13px; font-weight: 800; background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .mock-nav { list-style: none; flex: 1; }
+    .mock-nav li { padding: 8px 10px; border-radius: 7px; font-size: 12px; color: var(--t3); margin-bottom: 2px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: default; }
+    .mock-nav li.active { background: rgba(0,212,255,0.08); color: var(--cyan); border: 1px solid rgba(0,212,255,0.12); }
+    .mock-nav li .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 
-    /* PRICING */
-    .pricing-toggle { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 48px; background: var(--bg3); border-radius: 12px; padding: 4px; border: 1px solid var(--border); width: fit-content; margin-left: auto; margin-right: auto; }
-    .pricing-toggle button { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--t3); font-family: inherit; display: flex; align-items: center; gap: 6px; }
-    .pricing-toggle button.active { background: rgba(255,255,255,0.08); color: var(--t1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .pricing-toggle .save-badge { font-size: 9px; font-weight: 800; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.03em; }
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1000px; margin: 0 auto; align-items: start; }
-    .pricing-card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 32px 28px; position: relative; }
-    .pricing-card.featured { border-color: var(--accent); background: linear-gradient(180deg, rgba(249,115,22,0.04) 0%, var(--card) 40%); }
-    .pricing-card.featured::before { content: 'MOST POPULAR'; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 4px 14px; border-radius: 6px; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; }
-    .pricing-tier { font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.02em; }
-    .pricing-desc { font-size: 13px; color: var(--t3); margin-bottom: 16px; }
-    .pricing-price { margin-bottom: 4px; display: flex; align-items: baseline; gap: 4px; }
-    .pricing-price .amount { font-size: 40px; font-weight: 900; letter-spacing: -0.04em; }
-    .pricing-price .period { font-size: 14px; color: var(--t3); font-weight: 500; }
-    .pricing-annual { font-size: 12px; color: var(--t3); margin-bottom: 24px; }
-    .pricing-features { list-style: none; margin-bottom: 28px; }
-    .pricing-features li { font-size: 13px; color: var(--t2); padding: 5px 0; display: flex; align-items: center; gap: 10px; }
-    .pricing-features li svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
-    .pricing-card .btn { width: 100%; justify-content: center; }
+    /* Main content area */
+    .mock-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .mock-topbar {
+      height: 48px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; gap: 20px; padding: 0 16px;
+      background: rgba(8,12,24,0.4);
+    }
+    .mock-timer { font-size: 12px; color: var(--t3); font-family: 'SF Mono', monospace; letter-spacing: 0.06em; }
+    .mock-live-btn {
+      padding: 6px 18px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      font-size: 11px; font-weight: 800; color: white; letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 5px;
+      box-shadow: 0 0 16px rgba(0,212,255,0.3);
+      animation: live-glow 2s ease-in-out infinite;
+    }
+    .mock-live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: pulse-dot 1.5s infinite; }
+    .mock-viewers { font-size: 11px; color: var(--t3); display: flex; align-items: center; gap: 4px; }
+    .mock-revenue { font-size: 12px; font-weight: 700; color: var(--success); }
 
-    /* CTA */
-    .cta { padding: 100px 24px; text-align: center; }
-    .cta-box { max-width: 760px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 56px 40px; position: relative; overflow: hidden; }
-    .cta-box::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(249,115,22,0.08), transparent 70%); }
-    .cta h2 { font-size: clamp(26px, 3.5vw, 36px); font-weight: 800; margin-bottom: 14px; letter-spacing: -0.03em; position: relative; }
-    .cta p { font-size: 15px; color: var(--t2); margin-bottom: 28px; max-width: 440px; margin-left: auto; margin-right: auto; position: relative; }
-    .cta-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+    /* Stream grid in mockup */
+    .mock-streams { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; }
+    .mock-stream { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); display: flex; flex-direction: column; }
+    .mock-stream-head {
+      height: 26px; display: flex; align-items: center; padding: 0 8px; gap: 5px;
+      font-size: 10px; font-weight: 700;
+    }
+    .mock-stream-head .sdot { width: 5px; height: 5px; border-radius: 50%; }
+    .mock-stream-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    .mock-stream-foot {
+      height: 20px; display: flex; align-items: center; justify-content: center; gap: 4px;
+      font-size: 8px; font-weight: 800; border-top: 1px solid var(--border);
+      color: var(--success); letter-spacing: 0.06em;
+    }
+    .mock-ldot { width: 4px; height: 4px; border-radius: 50%; background: var(--success); animation: pulse-dot 1.5s infinite; }
+    /* Product overlay in stream */
+    .mock-overlay {
+      position: absolute; bottom: 4px; left: 4px; right: 4px;
+      background: rgba(12,17,40,0.92); backdrop-filter: blur(12px);
+      border-radius: 6px; border: 1px solid rgba(0,212,255,0.15);
+      padding: 5px 7px; display: flex; align-items: center; gap: 6px;
+    }
+    .mock-overlay-price { font-size: 9px; font-weight: 800; color: var(--cyan); }
+    .mock-overlay-buy { padding: 2px 7px; border-radius: 4px; background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; font-size: 7px; font-weight: 800; white-space: nowrap; }
 
-    /* FOOTER */
-    footer { border-top: 1px solid var(--border); padding: 40px 24px; }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-    .footer-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
-    .footer-links { display: flex; gap: 24px; }
-    .footer-links a { font-size: 12px; color: var(--t3); transition: color 0.2s; font-weight: 500; }
-    .footer-links a:hover { color: var(--t1); }
+    /* Right panel */
+    .mock-panel {
+      width: 210px; border-left: 1px solid var(--border);
+      background: rgba(8,12,24,0.6); display: flex; flex-direction: column;
+    }
+    .mock-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .mock-tab { flex: 1; padding: 9px 0; font-size: 10px; font-weight: 600; color: var(--t3); text-align: center; position: relative; }
+    .mock-tab.active { color: var(--cyan); }
+    .mock-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1.5px; background: linear-gradient(90deg, var(--cyan), var(--purple)); }
+    .mock-comments { flex: 1; padding: 8px; overflow: hidden; }
+    .mock-comment { display: flex; gap: 6px; padding: 5px 0; align-items: flex-start; }
+    .mock-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: white; flex-shrink: 0; }
+    .mock-ctext { font-size: 10px; color: var(--t2); line-height: 1.4; }
+    .mock-ctext strong { color: var(--t1); font-weight: 600; }
+    .mock-signal { display: inline-flex; align-items: center; gap: 2px; font-size: 7px; padding: 1px 4px; border-radius: 3px; background: rgba(0,212,255,0.1); color: var(--cyan); font-weight: 700; margin-left: 3px; }
+    .mock-ai { padding: 8px; border-top: 1px solid var(--border); }
+    .mock-ai-label { font-size: 9px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .mock-ai-item { padding: 5px 8px; border-radius: 5px; font-size: 9px; color: var(--t2); background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.08); margin-bottom: 4px; cursor: default; }
+    .mock-ai-item:hover { background: rgba(0,212,255,0.08); color: var(--cyan); }
+
+    /* ── SECTIONS ── */
+    section.container { padding: 100px 24px; }
+    .sec-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; background: linear-gradient(90deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    h2.sec-title { font-size: clamp(30px, 3.5vw, 44px); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 16px; }
+    p.sec-sub { font-size: 16px; color: var(--t2); max-width: 520px; line-height: 1.75; margin-bottom: 56px; letter-spacing: -0.01em; }
+
+    /* ── FEATURE BENTO ── */
+    .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .bento-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.3s, background 0.3s, transform 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .bento-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(0,212,255,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .bento-card:hover { border-color: rgba(0,212,255,0.2); background: var(--card2); transform: translateY(-2px); }
+    .bento-card.wide { grid-column: span 2; }
+    .bento-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+    }
+    .bento-icon svg { width: 22px; height: 22px; }
+    .bento-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .bento-card p { font-size: 13px; color: var(--t2); line-height: 1.7; }
+
+    /* ── HOW IT WORKS ── */
+    .hiw-section { background: rgba(12,17,40,0.6); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
+    .steps::before {
+      content: '';
+      position: absolute; top: 28px; left: 60px; right: 60px; height: 1px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink));
+      opacity: 0.25;
+    }
+    .step { text-align: left; }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 14px; margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; color: white;
+      box-shadow: 0 0 20px rgba(0,212,255,0.25);
+    }
+    .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .step p { font-size: 14px; color: var(--t2); line-height: 1.7; }
+
+    /* ── STATS ── */
+    .stats-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); margin: 80px 0; }
+    .stat-cell { background: var(--bg2); padding: 32px 24px; }
+    .stat-val { font-size: 36px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 4px; background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .stat-label { font-size: 13px; color: var(--t3); font-weight: 500; }
+
+    /* ── PRICING ── */
+    .pricing-toggle { display: flex; align-items: center; gap: 0; margin-bottom: 48px; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 4px; border: 1px solid var(--border); width: fit-content; }
+    .pt-btn { padding: 9px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--t3); font-family: inherit; display: flex; align-items: center; gap: 6px; }
+    .pt-btn.active { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+    .save-badge { font-size: 9px; font-weight: 800; background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.03em; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 1000px; margin: 0 auto; align-items: start; }
+    .pc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .pc::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+    .pc.featured {
+      border-color: rgba(0,212,255,0.3);
+      background: linear-gradient(180deg, rgba(0,212,255,0.04) 0%, var(--card) 50%);
+      box-shadow: 0 0 40px rgba(0,212,255,0.08);
+    }
+    .pc.featured::before { background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+    .pc-badge { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; padding: 5px 16px; border-radius: 0 0 10px 10px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; white-space: nowrap; }
+    .pc-tier { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .pc-desc { font-size: 13px; color: var(--t3); margin-bottom: 20px; }
+    .pc-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+    .pc-amount { font-size: 44px; font-weight: 900; letter-spacing: -0.05em; }
+    .pc.featured .pc-amount { background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .pc-period { font-size: 14px; color: var(--t3); }
+    .pc-annual { font-size: 12px; color: var(--t3); margin-bottom: 28px; }
+    .pc-btn { width: 100%; display: flex; justify-content: center; align-items: center; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; font-family: inherit; margin-bottom: 28px; transition: all 0.2s; }
+    .pc-btn-primary { background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; box-shadow: 0 0 24px rgba(0,212,255,0.2); }
+    .pc-btn-primary:hover { box-shadow: 0 0 36px rgba(0,212,255,0.35); transform: translateY(-1px); }
+    .pc-btn-ghost { background: rgba(255,255,255,0.04); color: var(--t1); border: 1px solid var(--border2); }
+    .pc-btn-ghost:hover { background: rgba(255,255,255,0.08); }
+    .pc-features { list-style: none; }
+    .pc-features li { font-size: 13px; color: var(--t2); padding: 5px 0; display: flex; align-items: center; gap: 10px; }
+    .pc-check { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .testi {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+      position: relative; overflow: hidden; transition: border-color 0.3s;
+    }
+    .testi:hover { border-color: rgba(0,212,255,0.15); }
+    .testi::before { content: '"'; position: absolute; top: -8px; right: 16px; font-size: 80px; font-weight: 900; color: rgba(0,212,255,0.06); line-height: 1; pointer-events: none; }
+    .testi-stars { display: flex; gap: 3px; margin-bottom: 12px; }
+    .testi-star { color: #fbbf24; font-size: 12px; }
+    .testi-text { font-size: 14px; color: var(--t2); line-height: 1.7; margin-bottom: 20px; }
+    .testi-author { display: flex; align-items: center; gap: 10px; }
+    .testi-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; }
+    .testi-name { font-size: 13px; font-weight: 700; }
+    .testi-role { font-size: 11px; color: var(--t3); }
+
+    /* ── CTA ── */
+    .cta-section { padding: 100px 24px; text-align: center; }
+    .cta-box {
+      max-width: 800px; margin: 0 auto;
+      background: linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(139,92,246,0.05) 100%);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 24px; padding: 72px 48px;
+      position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
+    }
+    .cta-box h2 { font-size: clamp(28px, 3.5vw, 42px); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 14px; position: relative; }
+    .cta-box p { font-size: 16px; color: var(--t2); margin-bottom: 36px; max-width: 480px; margin-left: auto; margin-right: auto; position: relative; }
+    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+    .os-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 700;
+      transition: all 0.2s; cursor: pointer; font-family: inherit; border: none;
+    }
+    .os-mac { background: linear-gradient(135deg, var(--cyan), var(--purple)); color: white; box-shadow: 0 0 32px rgba(0,212,255,0.25); }
+    .os-mac:hover { box-shadow: 0 0 48px rgba(0,212,255,0.4); transform: translateY(-2px); }
+    .os-win { background: rgba(255,255,255,0.05); color: var(--t1); border: 1px solid var(--border2); backdrop-filter: blur(8px); }
+    .os-win:hover { background: rgba(255,255,255,0.09); }
+    .os-linux { background: rgba(255,255,255,0.05); color: var(--t1); border: 1px solid var(--border2); backdrop-filter: blur(8px); }
+    .os-linux:hover { background: rgba(255,255,255,0.09); }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--border); padding: 48px 24px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+    .footer-brand p { font-size: 13px; color: var(--t3); line-height: 1.7; margin-top: 12px; max-width: 260px; }
+    .footer-col h4 { font-size: 12px; font-weight: 700; color: var(--t1); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 13px; color: var(--t3); margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--cyan); }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .footer-copy { font-size: 12px; color: var(--t3); }
+    .footer-links-bot { display: flex; gap: 20px; }
+    .footer-links-bot a { font-size: 12px; color: var(--t3); transition: color 0.2s; }
+    .footer-links-bot a:hover { color: var(--cyan); }
 
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    /* ── ANIMATIONS ── */
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes live-glow { 0%, 100% { box-shadow: 0 0 16px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 28px rgba(0,212,255,0.5), 0 0 8px rgba(139,92,246,0.3); } }
+    @keyframes float-1 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+    @keyframes float-2 { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(6px); } }
+    .plat-tiktok { animation: float-1 4s ease-in-out infinite; }
+    .plat-youtube { animation: float-2 3.5s ease-in-out infinite; }
+    .plat-instagram { animation: float-1 5s ease-in-out infinite 0.5s; }
+    .plat-facebook { animation: float-2 4.5s ease-in-out infinite 1s; }
 
-    @media (max-width: 768px) {
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
       .nav-links { display: none; }
-      .feat-grid, .steps-grid, .pricing-grid { grid-template-columns: 1fr; }
-      .mockup-body { height: 320px; }
-      .mockup-sidebar, .mockup-panel { display: none; }
-      .hero-platforms { flex-wrap: wrap; gap: 12px; }
-      .footer-inner { flex-direction: column; gap: 20px; text-align: center; }
-      .footer-links { flex-wrap: wrap; justify-content: center; }
+      .bento { grid-template-columns: 1fr; }
+      .bento-card.wide { grid-column: span 1; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .steps::before { display: none; }
+      .pricing-grid, .testimonials { grid-template-columns: 1fr; }
+      .stats-band { grid-template-columns: repeat(2, 1fr); }
+      .mockup-body { height: 300px; }
+      .mock-sidebar, .mock-panel { display: none; }
+      .hero h1 { font-size: 42px; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 12px; }
     }
   </style>
 </head>
@@ -181,129 +491,186 @@
   <nav>
     <div class="nav-inner">
       <a href="#" class="nav-logo">
-        <div class="nav-logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
         </div>
-        StreamSync
+        <span class="logo-text">StreamSync</span>
       </a>
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#how-it-works">How It Works</a>
         <a href="#pricing">Pricing</a>
-        <a href="#download" class="btn btn-primary">Download Free</a>
+        <a href="#download" class="btn-nav">Download Free</a>
       </div>
     </div>
   </nav>
 
   <!-- HERO -->
   <section class="hero">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-grid"></div>
+
     <div class="hero-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      Now available for Mac, Windows &amp; Linux
+      <span class="pulse"></span>
+      Live on 4 platforms simultaneously
     </div>
-    <h1>Go Live Everywhere.<br /><span class="grad">Sell Anything.</span></h1>
-    <p>Stream to TikTok, YouTube, Instagram, and Facebook simultaneously. AI detects buying signals in real-time so you never miss a sale.</p>
+
+    <h1>
+      <span class="h1-line1">Go Live Everywhere.</span>
+      <span class="h1-grad">Sell Anything.</span>
+    </h1>
+    <p>One camera. Four platforms. Real-time AI that detects buying signals and turns viewers into customers — while you stream.</p>
+
     <div class="hero-btns">
       <a href="#download" class="btn btn-primary btn-lg">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download for Free
+        Download Free
       </a>
       <a href="#how-it-works" class="btn btn-ghost btn-lg">See How It Works</a>
     </div>
-    <div class="hero-platforms">
-      <div class="hero-platform"><div class="dot" style="background:var(--tiktok)"></div>TikTok</div>
-      <div class="hero-platform"><div class="dot" style="background:var(--youtube)"></div>YouTube</div>
-      <div class="hero-platform"><div class="dot" style="background:var(--instagram)"></div>Instagram</div>
-      <div class="hero-platform"><div class="dot" style="background:var(--facebook)"></div>Facebook</div>
+
+    <!-- Platform Icons -->
+    <div class="platform-orbit">
+      <div class="plat-icon plat-tiktok" title="TikTok">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff0050"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.91a8.16 8.16 0 004.77 1.52V7.97a4.85 4.85 0 01-1-.28z"/></svg>
+      </div>
+      <div class="plat-icon plat-youtube" title="YouTube">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.51 3.5 12 3.5 12 3.5s-7.51 0-9.38.55A3.02 3.02 0 00.5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 002.12 2.14c1.87.55 9.38.55 9.38.55s7.51 0 9.38-.55a3.02 3.02 0 002.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.75 15.48V8.52L15.8 12l-6.05 3.48z"/></svg>
+      </div>
+      <div class="plat-icon plat-instagram" title="Instagram">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="url(#ig-grad)">
+          <defs><linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      </div>
+      <div class="plat-icon plat-facebook" title="Facebook">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </div>
     </div>
 
     <!-- APP MOCKUP -->
-    <div class="mockup-wrap">
+    <div class="mockup-container">
+      <div class="mockup-glow"></div>
       <div class="mockup">
-        <div class="mockup-bar">
-          <div class="mockup-dot" style="background:#ff5f57"></div>
-          <div class="mockup-dot" style="background:#febc2e"></div>
-          <div class="mockup-dot" style="background:#28c840"></div>
+        <div class="mockup-titlebar">
+          <div class="tb-dot" style="background:#ff5f57"></div>
+          <div class="tb-dot" style="background:#febc2e"></div>
+          <div class="tb-dot" style="background:#28c840"></div>
+          <div class="tb-title">StreamSync — Go Live</div>
         </div>
         <div class="mockup-body">
-          <div class="mockup-sidebar">
-            <div class="mlogo"><div class="mlogo-icon"></div>StreamSync</div>
-            <div class="m-nav-item"><div class="m-nav-dot"></div>Dashboard</div>
-            <div class="m-nav-item active"><div class="m-nav-dot"></div>Go Live</div>
-            <div class="m-nav-item"><div class="m-nav-dot"></div>Products</div>
-            <div class="m-nav-item"><div class="m-nav-dot"></div>Analytics</div>
-            <div class="m-nav-item"><div class="m-nav-dot"></div>Settings</div>
-          </div>
-          <div class="mockup-main">
-            <div class="mockup-controls">
-              <div class="mockup-timer">00:14:32</div>
-              <div class="mockup-live-btn"><div class="live-dot"></div>LIVE</div>
-              <div class="mockup-viewers">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                1,247
-              </div>
+          <!-- Sidebar -->
+          <div class="mock-sidebar">
+            <div class="mock-logo">
+              <div class="mock-logo-icon"></div>
+              <span class="mock-logo-text">StreamSync</span>
             </div>
-            <div class="mockup-streams">
-              <div class="m-phone">
-                <div class="m-phone-head" style="background:rgba(255,0,80,0.08)"><div class="pdot" style="background:var(--tiktok)"></div>TikTok</div>
-                <div class="m-phone-body">
-                  <div class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
-                  <div class="m-overlay">
-                    <div class="m-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
-                    <div class="m-overlay-info"><div class="m-overlay-name">Summer Dress</div><div class="m-overlay-price">$49.99</div></div>
-                    <div class="m-overlay-btn">Buy Now</div>
+            <ul class="mock-nav">
+              <li><span class="nav-dot"></span>Dashboard</li>
+              <li class="active"><span class="nav-dot"></span>Go Live</li>
+              <li><span class="nav-dot"></span>Products</li>
+              <li><span class="nav-dot"></span>Analytics</li>
+              <li><span class="nav-dot"></span>Settings</li>
+            </ul>
+          </div>
+          <!-- Main -->
+          <div class="mock-main">
+            <div class="mock-topbar">
+              <div class="mock-timer">00:24:17</div>
+              <div class="mock-live-btn"><div class="mock-live-dot"></div>LIVE</div>
+              <div class="mock-viewers">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                10,129
+              </div>
+              <div class="mock-revenue">$3,456</div>
+            </div>
+            <div class="mock-streams">
+              <!-- TikTok -->
+              <div class="mock-stream" style="background:rgba(255,0,80,0.04)">
+                <div class="mock-stream-head" style="background:rgba(255,0,80,0.06)">
+                  <div class="sdot" style="background:#ff0050"></div>
+                  <span style="color:#ff0050">TikTok</span>
+                </div>
+                <div class="mock-stream-body" style="background:rgba(255,0,80,0.02)">
+                  <div class="mock-overlay">
+                    <div style="flex:1">
+                      <div style="font-size:8px;font-weight:600;color:var(--t1)">Summer Dress</div>
+                      <div class="mock-overlay-price">$49.99</div>
+                    </div>
+                    <div class="mock-overlay-buy">Buy Now</div>
                   </div>
                 </div>
-                <div class="m-phone-foot"><div class="ldot"></div>LIVE</div>
+                <div class="mock-stream-foot"><div class="mock-ldot"></div>LIVE</div>
               </div>
-              <div class="m-phone">
-                <div class="m-phone-head" style="background:rgba(255,0,0,0.08)"><div class="pdot" style="background:var(--youtube)"></div>YouTube</div>
-                <div class="m-phone-body"><div class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
-                <div class="m-phone-foot"><div class="ldot"></div>LIVE</div>
+              <!-- YouTube -->
+              <div class="mock-stream" style="background:rgba(255,0,0,0.04)">
+                <div class="mock-stream-head" style="background:rgba(255,0,0,0.06)">
+                  <div class="sdot" style="background:#ff0000"></div>
+                  <span style="color:#ff0000">YouTube</span>
+                </div>
+                <div class="mock-stream-body" style="background:rgba(255,0,0,0.02)">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </div>
+                <div class="mock-stream-foot"><div class="mock-ldot"></div>LIVE</div>
               </div>
-              <div class="m-phone">
-                <div class="m-phone-head" style="background:rgba(225,48,108,0.08)"><div class="pdot" style="background:var(--instagram)"></div>Instagram</div>
-                <div class="m-phone-body"><div class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/></svg></div></div>
-                <div class="m-phone-foot"><div class="ldot"></div>LIVE</div>
+              <!-- Instagram -->
+              <div class="mock-stream" style="background:rgba(225,48,108,0.04)">
+                <div class="mock-stream-head" style="background:rgba(225,48,108,0.06)">
+                  <div class="sdot" style="background:#e1306c"></div>
+                  <span style="color:#e1306c">Instagram</span>
+                </div>
+                <div class="mock-stream-body" style="background:rgba(225,48,108,0.02)">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/></svg>
+                </div>
+                <div class="mock-stream-foot"><div class="mock-ldot"></div>LIVE</div>
               </div>
-              <div class="m-phone">
-                <div class="m-phone-head" style="background:rgba(24,119,242,0.08)"><div class="pdot" style="background:var(--facebook)"></div>Facebook</div>
-                <div class="m-phone-body"><div class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div></div>
-                <div class="m-phone-foot"><div class="ldot"></div>LIVE</div>
+              <!-- Facebook -->
+              <div class="mock-stream" style="background:rgba(24,119,242,0.04)">
+                <div class="mock-stream-head" style="background:rgba(24,119,242,0.06)">
+                  <div class="sdot" style="background:#1877f2"></div>
+                  <span style="color:#1877f2">Facebook</span>
+                </div>
+                <div class="mock-stream-body" style="background:rgba(24,119,242,0.02)">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                </div>
+                <div class="mock-stream-foot"><div class="mock-ldot"></div>LIVE</div>
               </div>
             </div>
           </div>
-          <div class="mockup-panel">
-            <div class="m-tabs">
-              <div class="m-tab active">Comments</div>
-              <div class="m-tab">Products</div>
-              <div class="m-tab">AI</div>
+          <!-- Right Panel -->
+          <div class="mock-panel">
+            <div class="mock-tabs">
+              <div class="mock-tab active">Comments</div>
+              <div class="mock-tab">AI</div>
             </div>
-            <div class="m-comments">
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--tiktok)">S</div>
-                <div class="m-comment-text"><strong>ShopQueen23</strong> How much is this? <span class="m-signal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>SIGNAL</span></div>
+            <div class="mock-comments">
+              <div class="mock-comment">
+                <div class="mock-avatar" style="background:#ff0050">S</div>
+                <div class="mock-ctext"><strong>ShopQueen</strong> how much is this?? <span class="mock-signal">⚡ BUY</span></div>
               </div>
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--youtube)">D</div>
-                <div class="m-comment-text"><strong>DealHunter_</strong> Great stream!</div>
+              <div class="mock-comment">
+                <div class="mock-avatar" style="background:#ff0000">D</div>
+                <div class="mock-ctext"><strong>DealHunter</strong> I want one!</div>
               </div>
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--instagram)">T</div>
-                <div class="m-comment-text"><strong>TrendyMom</strong> I want one! <span class="m-signal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>SIGNAL</span></div>
+              <div class="mock-comment">
+                <div class="mock-avatar" style="background:#e1306c">T</div>
+                <div class="mock-ctext"><strong>TrendyMom</strong> where to buy? <span class="mock-signal">⚡ BUY</span></div>
               </div>
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--facebook)">L</div>
-                <div class="m-comment-text"><strong>LiveBuyer99</strong> Where to buy? <span class="m-signal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>SIGNAL</span></div>
+              <div class="mock-comment">
+                <div class="mock-avatar" style="background:#1877f2">L</div>
+                <div class="mock-ctext"><strong>LiveBuyer99</strong> do you ship internationally? <span class="mock-signal">⚡ BUY</span></div>
               </div>
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--tiktok)">G</div>
-                <div class="m-comment-text"><strong>GlowUpGirl</strong> Love this vibe</div>
+              <div class="mock-comment">
+                <div class="mock-avatar" style="background:var(--purple)">G</div>
+                <div class="mock-ctext"><strong>GlowUp</strong> love this vibe!</div>
               </div>
-              <div class="m-comment">
-                <div class="m-comment-avatar" style="background:var(--youtube)">N</div>
-                <div class="m-comment-text"><strong>NightOwlShop</strong> Do you ship? <span class="m-signal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>SIGNAL</span></div>
-              </div>
+            </div>
+            <div class="mock-ai">
+              <div class="mock-ai-label">Smart Replies</div>
+              <div class="mock-ai-item">Link in bio! 🛍️</div>
+              <div class="mock-ai-item">Ships in 2 days!</div>
+              <div class="mock-ai-item">DM for details</div>
             </div>
           </div>
         </div>
@@ -311,191 +678,249 @@
     </div>
   </section>
 
+  <!-- STATS -->
+  <div class="container">
+    <div class="stats-band reveal">
+      <div class="stat-cell">
+        <div class="stat-val">4×</div>
+        <div class="stat-label">More platforms, same effort</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">3.8×</div>
+        <div class="stat-label">Average revenue increase</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">94%</div>
+        <div class="stat-label">Buying signals detected</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">&lt;3ms</div>
+        <div class="stat-label">AI response latency</div>
+      </div>
+    </div>
+  </div>
+
   <!-- FEATURES -->
-  <section class="section container" id="features">
-    <div class="section-label">Features</div>
-    <h2>Everything you need to sell live</h2>
-    <p class="subtitle">Built for creators and sellers who want to maximize every live stream across every platform.</p>
-    <div class="feat-grid">
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(249,115,22,0.08)">
-          <svg style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  <section class="container" id="features" style="padding-top:0">
+    <div class="reveal">
+      <div class="sec-label">Features</div>
+      <h2 class="sec-title">Built for live commerce, not live streaming</h2>
+      <p class="sec-sub">Every feature designed around one goal: converting viewers into buyers while you're live.</p>
+    </div>
+    <div class="bento reveal">
+      <div class="bento-card wide">
+        <div class="bento-icon" style="background:rgba(0,212,255,0.08)">
+          <svg style="color:var(--cyan)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>Multi-Platform Streaming</h3>
-        <p>Go live on TikTok, YouTube, Instagram, and Facebook simultaneously from one window. No extra software needed.</p>
+        <h3>Simultaneous Multi-Platform Streaming</h3>
+        <p>One camera, one mic — four platforms live at the same time via RTMP. TikTok, YouTube, Instagram, and Facebook all broadcasting in parallel. No extra encoders, no extra gear, no switching tabs.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(34,197,94,0.08)">
-          <svg style="color:var(--success)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M20.66 9A10 10 0 0 0 14 2.05V9h6.66z" fill="currentColor" opacity="0.2"/></svg>
+      <div class="bento-card">
+        <div class="bento-icon" style="background:rgba(139,92,246,0.08)">
+          <svg style="color:var(--purple)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M20 12h2a10 10 0 0 0-10-10v2" opacity="0.5"/></svg>
         </div>
-        <h3>AI Buying Signals</h3>
-        <p>AI scans comments in real-time to detect purchase intent. Never miss when someone asks about price or wants to buy.</p>
+        <h3>AI Buying Signal Detection</h3>
+        <p>AI scans every comment across all platforms in real-time. Price questions, "where to buy", shipping queries — all flagged instantly with one-click reply suggestions.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(99,102,241,0.08)">
-          <svg style="color:#6366f1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div class="bento-card">
+        <div class="bento-icon" style="background:rgba(236,72,153,0.08)">
+          <svg style="color:var(--pink)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         </div>
-        <h3>Unified Comments</h3>
-        <p>See comments from all platforms in one feed. Platform-colored badges make it easy to know who said what and where.</p>
+        <h3>Live Product Overlays</h3>
+        <p>Pin any product and watch a floating buy card appear across all four stream panels. Name, price, and a "Buy Now" button — right on stream.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(236,72,153,0.08)">
-          <svg style="color:#ec4899" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <div class="bento-card">
+        <div class="bento-icon" style="background:rgba(16,185,129,0.08)">
+          <svg style="color:var(--success)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
-        <h3>Product Overlays</h3>
-        <p>Pin products to your stream with floating overlays showing name, price, and a buy button. One click to showcase.</p>
+        <h3>Unified Comment Feed</h3>
+        <p>All comments from all platforms in one real-time feed. Platform-colored badges so you always know exactly which audience is talking.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(249,115,22,0.08)">
-          <svg style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div class="bento-card">
+        <div class="bento-icon" style="background:rgba(0,212,255,0.08)">
+          <svg style="color:var(--cyan)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
         <h3>Smart Auto-Replies</h3>
-        <p>AI generates personalized reply suggestions for buying signals. Send with one click to convert viewers into buyers.</p>
+        <p>When AI spots a buying signal, it drafts a personalized reply template. Send with one click. Close the sale without breaking your flow.</p>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon" style="background:rgba(14,165,233,0.08)">
-          <svg style="color:#0ea5e9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <div class="bento-card">
+        <div class="bento-icon" style="background:rgba(139,92,246,0.08)">
+          <svg style="color:var(--purple)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
-        <h3>Session Persistence</h3>
-        <p>Log into your platform accounts once. StreamSync remembers your sessions across app restarts. No repeated logins.</p>
+        <h3>Persistent Sessions</h3>
+        <p>Log into TikTok, YouTube, Instagram and Facebook once. Sessions persist across restarts. Never re-login again.</p>
       </div>
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section class="section steps-section" id="how-it-works">
-    <div class="container">
-      <div class="section-label">How It Works</div>
-      <h2>Live in 3 steps</h2>
-      <p class="subtitle">From download to your first sale in under 5 minutes.</p>
-      <div class="steps-grid">
+  <section class="hiw-section" id="how-it-works">
+    <div class="container" style="padding:100px 24px">
+      <div class="reveal">
+        <div class="sec-label">How It Works</div>
+        <h2 class="sec-title">From download to live in 3 steps</h2>
+        <p class="sec-sub">Under 5 minutes from install to your first multi-platform stream.</p>
+      </div>
+      <div class="steps reveal">
         <div class="step">
           <div class="step-num">1</div>
-          <h3>Download &amp; Sign In</h3>
-          <p>Install StreamSync and sign into your TikTok, YouTube, Instagram, and Facebook accounts directly in the app. Sessions stay saved.</p>
+          <h3>Download &amp; Connect</h3>
+          <p>Install StreamSync. Log into your TikTok, YouTube, Instagram, and Facebook accounts inside the app. Sessions stay saved — forever.</p>
         </div>
         <div class="step">
           <div class="step-num">2</div>
           <h3>Add Products &amp; Go Live</h3>
-          <p>Add your products with name, price, and buy link. Hit "Go Live" to start streaming on all platforms at once with product overlays.</p>
+          <p>Add your products with name, price, and buy link. Select your webcam, mic, and quality. Hit "Go Live" — all four platforms start streaming instantly.</p>
         </div>
         <div class="step">
           <div class="step-num">3</div>
           <h3>Sell with AI Copilot</h3>
-          <p>Watch as AI detects buying signals in comments. Send suggested replies with one click to convert viewers into customers.</p>
+          <p>Watch comments pour in from all platforms. AI flags every buying signal and suggests the perfect reply. One click and you're converting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="container" style="padding-top:100px;padding-bottom:60px">
+    <div class="reveal">
+      <div class="sec-label">Social Proof</div>
+      <h2 class="sec-title">Sellers making more, everywhere</h2>
+      <p class="sec-sub">Real creators, real results — live selling across all platforms at once.</p>
+    </div>
+    <div class="testimonials reveal">
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">I went from streaming one platform to all four overnight. My revenue literally tripled in the first week. The AI catching buying signals is insane — I close sales I would have completely missed.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--purple))">S</div>
+          <div>
+            <div class="testi-name">Sarah K.</div>
+            <div class="testi-role">Fashion creator · 182K followers</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">The product overlay feature alone paid for my subscription 10x over. When viewers see the price and buy button floating on stream, conversion rate is unreal. Game changer for live e-comm.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--purple),var(--pink))">M</div>
+          <div>
+            <div class="testi-name">Marcus T.</div>
+            <div class="testi-role">Electronics seller · 94K followers</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">Being able to see every comment from every platform in one feed changes everything. I'm not missing anything. The AI reply suggestions save me during high-traffic streams when I can't keep up.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--pink),#f97316)">A</div>
+          <div>
+            <div class="testi-name">Aisha R.</div>
+            <div class="testi-role">Beauty brand owner · 310K followers</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- PRICING -->
-  <section class="section container" id="pricing">
-    <div style="text-align:center;">
-      <div class="section-label">Pricing</div>
-      <h2>Start free. Scale when ready.</h2>
-      <p class="subtitle" style="margin-left:auto;margin-right:auto;">No credit card required. Try everything free for 14 days.</p>
+  <section class="container" id="pricing" style="padding-top:60px">
+    <div style="text-align:center" class="reveal">
+      <div class="sec-label">Pricing</div>
+      <h2 class="sec-title">Start free. Scale when you're selling.</h2>
+      <p class="sec-sub" style="margin:0 auto 32px">No credit card required. 14-day trial on every plan.</p>
     </div>
-
-    <div class="pricing-toggle" id="billing-toggle">
-      <button id="btn-monthly" onclick="setBilling('monthly')">Monthly</button>
-      <button id="btn-annual" class="active" onclick="setBilling('annual')">Annual <span class="save-badge">SAVE 20%</span></button>
+    <div style="display:flex;justify-content:center;margin-bottom:48px">
+      <div class="pricing-toggle">
+        <button class="pt-btn" id="btn-monthly" onclick="setBilling('monthly')">Monthly</button>
+        <button class="pt-btn active" id="btn-annual" onclick="setBilling('annual')">Annual <span class="save-badge">SAVE 20%</span></button>
+      </div>
     </div>
-
-    <div class="pricing-grid">
+    <div class="pricing-grid reveal">
       <!-- Starter -->
-      <div class="pricing-card">
-        <div class="pricing-tier">Starter</div>
-        <div class="pricing-desc">Perfect for getting started with live selling.</div>
-        <div class="pricing-price"><span class="amount" data-monthly="29" data-annual="23">$23</span><span class="period">/month</span></div>
-        <div class="pricing-annual" data-monthly="" data-annual="Billed annually &middot; $276/year"><span>Billed annually &middot; $276/year</span></div>
-        <a href="#download" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:24px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Get Started
-        </a>
-        <ul class="pricing-features">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>2 platforms simultaneously</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>10 products per stream</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Basic analytics</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Product overlay</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Comment management</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Shoppable replays</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Email support</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>720p stream quality</li>
+      <div class="pc">
+        <div class="pc-tier">Starter</div>
+        <div class="pc-desc">For creators getting started with live selling.</div>
+        <div class="pc-price">
+          <span class="pc-amount" data-monthly="29" data-annual="23">$23</span>
+          <span class="pc-period">/mo</span>
+        </div>
+        <div class="pc-annual"><span data-monthly="" data-annual="Billed annually · $276/year">Billed annually · $276/year</span></div>
+        <button class="pc-btn pc-btn-ghost" onclick="window.location='#download'">Get Started</button>
+        <ul class="pc-features">
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>2 platforms simultaneously</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>10 products per stream</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Basic analytics</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Product overlays</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Unified comment feed</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>720p stream quality</li>
         </ul>
       </div>
-
       <!-- Pro -->
-      <div class="pricing-card featured">
-        <div class="pricing-tier">Pro</div>
-        <div class="pricing-desc">For serious sellers ready to scale.</div>
-        <div class="pricing-price"><span class="amount" data-monthly="79" data-annual="63">$63</span><span class="period">/month</span></div>
-        <div class="pricing-annual" data-monthly="" data-annual="Billed annually &middot; $756/year"><span>Billed annually &middot; $756/year</span></div>
-        <a href="#download" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:24px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Start Pro Trial
-        </a>
-        <ul class="pricing-features">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>All 4 platforms simultaneously</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Unlimited products</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced analytics</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>AI Co-Pilot</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Smart comment analysis</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Auto-response suggestions</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>1080p stream quality</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Custom product overlays</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Revenue tracking</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Export reports</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Team collaboration (2 seats)</li>
+      <div class="pc featured">
+        <div class="pc-badge">MOST POPULAR</div>
+        <div class="pc-tier">Pro</div>
+        <div class="pc-desc">For serious sellers ready to scale revenue.</div>
+        <div class="pc-price">
+          <span class="pc-amount" data-monthly="79" data-annual="63">$63</span>
+          <span class="pc-period">/mo</span>
+        </div>
+        <div class="pc-annual"><span data-monthly="" data-annual="Billed annually · $756/year">Billed annually · $756/year</span></div>
+        <button class="pc-btn pc-btn-primary" onclick="window.location='#download'">Start Pro Trial</button>
+        <ul class="pc-features">
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>All 4 platforms simultaneously</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Unlimited products</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced analytics &amp; revenue</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>AI Co-Pilot &amp; smart replies</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>1080p stream quality</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Export reports</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Team (2 seats)</li>
         </ul>
       </div>
-
       <!-- Enterprise -->
-      <div class="pricing-card">
-        <div class="pricing-tier">Enterprise</div>
-        <div class="pricing-desc">For teams and high-volume sellers.</div>
-        <div class="pricing-price"><span class="amount" data-monthly="199" data-annual="159">$159</span><span class="period">/month</span></div>
-        <div class="pricing-annual" data-monthly="" data-annual="Billed annually &middot; $1908/year"><span>Billed annually &middot; $1908/year</span></div>
-        <a href="mailto:hello@streamsync.dev" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:24px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Contact Sales
-        </a>
-        <ul class="pricing-features">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>White-label streaming</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Custom integrations</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dedicated account manager</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>24/7 phone support</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>4K stream quality</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>SLA guarantee (99.99%)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced API access</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Unlimited team seats</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Custom training</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Bulk product import</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Multi-store support</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Compliance reporting</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>SSO / SAML</li>
+      <div class="pc">
+        <div class="pc-tier">Enterprise</div>
+        <div class="pc-desc">For agencies and high-volume sellers.</div>
+        <div class="pc-price">
+          <span class="pc-amount" data-monthly="199" data-annual="159">$159</span>
+          <span class="pc-period">/mo</span>
+        </div>
+        <div class="pc-annual"><span data-monthly="" data-annual="Billed annually · $1,908/year">Billed annually · $1,908/year</span></div>
+        <button class="pc-btn pc-btn-ghost" onclick="window.location='mailto:hello@streamsync.dev?subject=Enterprise Plan'">Contact Sales</button>
+        <ul class="pc-features">
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>White-label streaming</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dedicated account manager</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>4K stream quality</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>24/7 phone support</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>SLA 99.99% uptime</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Advanced API access</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Unlimited team seats</li>
+          <li><svg class="pc-check" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>SSO / SAML</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta" id="download">
-    <div class="cta-box">
-      <h2>Ready to sell live?</h2>
-      <p>Download StreamSync free and start streaming to all platforms in minutes.</p>
+  <!-- CTA / DOWNLOAD -->
+  <section class="cta-section" id="download">
+    <div class="cta-box reveal">
+      <h2>Start streaming everywhere tonight.</h2>
+      <p>Download StreamSync free. No credit card. Mac, Windows &amp; Linux.</p>
       <div class="cta-btns">
-        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync-arm64.dmg" class="btn btn-primary btn-lg">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 16.56 2.93 11.3 4.7 7.72A5.57 5.57 0 019.28 4.84c1.28-.03 2.5.83 3.28.83.78 0 2.27-1.03 3.83-.85.65.03 2.5.26 3.68 1.98-.12.07-2.48 1.39-2.45 4.23.03 3.4 2.96 4.51 2.99 4.52-.03.07-.47 1.59-1.6 3.17l-.3.78z"/><path d="M15.84 1A5.08 5.08 0 0112.52 2.4 4.83 4.83 0 0011.2 6a4.26 4.26 0 003.36-1.65A4.67 4.67 0 0015.84 1z"/></svg>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync-arm64.dmg" class="os-btn os-mac">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 16.56 2.93 11.3 4.7 7.72A5.57 5.57 0 019.28 4.84c1.28-.03 2.5.83 3.28.83.78 0 2.27-1.03 3.83-.85.65.03 2.5.26 3.68 1.98-.12.07-2.48 1.39-2.45 4.23.03 3.4 2.96 4.51 2.99 4.52-.03.07-.47 1.59-1.6 3.17l-.3.78z"/><path d="M15.84 1A5.08 5.08 0 0112.52 2.4 4.83 4.83 0 0011.2 6a4.26 4.26 0 003.36-1.65A4.67 4.67 0 0015.84 1z"/></svg>
           Download for Mac
         </a>
-        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync-Setup.exe" class="btn btn-ghost btn-lg">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync-Setup.exe" class="os-btn os-win">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
           Windows
         </a>
-        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync.AppImage" class="btn btn-ghost btn-lg">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop/releases/latest/download/StreamSync.AppImage" class="os-btn os-linux">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
           Linux
         </a>
       </div>
@@ -505,36 +930,70 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-inner">
-      <a href="#" class="footer-logo">
-        <div class="nav-logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        </div>
-        StreamSync
-      </a>
-      <div class="footer-links">
+      <div class="footer-brand">
+        <a href="#" style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+          <span class="logo-text" style="font-size:16px;font-weight:800">StreamSync</span>
+        </a>
+        <p>Go live on TikTok, YouTube, Instagram, and Facebook simultaneously. Sell more with AI-powered buying signal detection.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
         <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
         <a href="#pricing">Pricing</a>
-        <a href="https://github.com/Kobecreative-bit/streamsync-desktop">GitHub</a>
+        <a href="#download">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/privacy.html">Privacy Policy</a>
         <a href="mailto:hello@streamsync.dev">Contact</a>
       </div>
-      <div class="footer-copy">&copy; 2026 StreamSync</div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://github.com/Kobecreative-bit/streamsync-desktop">GitHub</a>
+        <a href="mailto:hello@streamsync.dev">Support</a>
+        <a href="mailto:hello@streamsync.dev?subject=Enterprise Plan">Enterprise</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2026 StreamSync. All rights reserved.</div>
+      <div class="footer-links-bot">
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="mailto:hello@streamsync.dev">Contact</a>
+      </div>
     </div>
   </footer>
 
   <script>
+    // Billing toggle
     function setBilling(type) {
       const isAnnual = type === 'annual';
       document.getElementById('btn-monthly').classList.toggle('active', !isAnnual);
       document.getElementById('btn-annual').classList.toggle('active', isAnnual);
-      document.querySelectorAll('.pricing-price .amount').forEach(el => {
-        const val = isAnnual ? el.dataset.annual : el.dataset.monthly;
-        el.textContent = '$' + val;
+      document.querySelectorAll('.pc-amount').forEach(el => {
+        el.textContent = '$' + (isAnnual ? el.dataset.annual : el.dataset.monthly);
       });
-      document.querySelectorAll('.pricing-annual').forEach(el => {
-        const span = el.querySelector('span');
-        if (span) span.textContent = isAnnual ? el.dataset.annual : el.dataset.monthly;
+      document.querySelectorAll('[data-monthly][data-annual]').forEach(el => {
+        if (el.classList.contains('pc-annual') || el.tagName === 'SPAN') {
+          const span = el.tagName === 'SPAN' ? el : el.querySelector('span');
+          if (span) span.textContent = isAnnual ? el.dataset.annual : (el.dataset.monthly || '');
+        }
       });
     }
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
 </body>
 </html>
