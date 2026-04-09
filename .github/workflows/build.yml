@@ -25,6 +25,9 @@ jobs:
 
       - name: Build
         run: npx electron-vite build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Import Code Signing Certificate
         if: env.CSC_LINK != ''
@@ -91,6 +94,9 @@ jobs:
 
       - name: Build
         run: npx electron-vite build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Package (Windows)
         run: npx electron-builder --win --publish never
@@ -129,6 +135,9 @@ jobs:
 
       - name: Build
         run: npx electron-vite build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Package (Linux)
         run: npx electron-builder --linux --publish never
