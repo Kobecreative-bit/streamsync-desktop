@@ -9,7 +9,6 @@ files:
 mac:
   category: public.app-category.video
   identity: "Developer ID Application: Benjamin Kobe (M9H6HL2KVN)"
-  teamId: M9H6HL2KVN
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: resources/entitlements.mac.plist
