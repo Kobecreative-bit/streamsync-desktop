@@ -441,16 +441,16 @@ function RTMPSettings(): JSX.Element {
           </svg>
         </div>
         <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
-          Camera & RTMP Streaming
+          Camera & Streaming
         </h2>
         {ffmpegOk === false && (
           <span className="ml-auto text-[10px] text-danger bg-danger/10 px-2 py-0.5 rounded-full font-medium">
-            FFmpeg not found
+            Streaming engine not found
           </span>
         )}
         {ffmpegOk === true && (
           <span className="ml-auto text-[10px] text-success bg-success/10 px-2 py-0.5 rounded-full font-medium">
-            FFmpeg ready
+            Ready
           </span>
         )}
       </div>
@@ -458,8 +458,8 @@ function RTMPSettings(): JSX.Element {
       {ffmpegOk === false && (
         <div className="mb-3 p-3 rounded-lg bg-danger/5 border border-danger/10">
           <p className="text-xs text-danger/80">
-            FFmpeg is required for camera streaming. Install it via{' '}
-            <span className="font-mono bg-danger/10 px-1 rounded">brew install ffmpeg</span> (macOS) or download from ffmpeg.org.
+            The streaming engine is missing. Please reinstall StreamSync or contact{' '}
+            <span className="text-accent">support@streamsync.dev</span>.
           </p>
         </div>
       )}
@@ -576,7 +576,7 @@ function RTMPSettings(): JSX.Element {
 
       {/* Platform Stream Keys */}
       <p className="text-xs text-text-secondary/60 mb-2 px-1">
-        Your camera feed is encoded once and sent to all enabled platforms simultaneously.
+        Enable each platform and paste the stream key from your account's live settings.
       </p>
       <div className="bg-bg-card rounded-xl border border-white/5 divide-y divide-white/5">
         {keys.map((key) => {

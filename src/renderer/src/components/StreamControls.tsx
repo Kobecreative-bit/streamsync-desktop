@@ -84,7 +84,7 @@ function StreamControls({
                   backgroundColor: config.color + '12',
                   color: isLive ? config.color : '#94a3b8'
                 }}
-                title={rtmpError ? `RTMP Error: ${rtmp?.error}` : rtmpLive ? 'RTMP streaming' : ''}
+                title={rtmpError ? `Streaming error: ${rtmp?.error}` : rtmpLive ? 'Streaming live' : ''}
               >
                 <div
                   className={`w-1.5 h-1.5 rounded-full ${rtmpConnecting ? 'animate-pulse' : ''}`}
