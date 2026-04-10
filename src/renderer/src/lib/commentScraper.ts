@@ -50,9 +50,4 @@ function generateDemoComment(): Comment {
   }
 }
 
-/** @deprecated Use generateDemoComment instead */
-function generateFakeComment(): Comment {
-  return generateDemoComment()
-}
-
-export { generateDemoComment, generateFakeComment }
+export { generateDemoComment }

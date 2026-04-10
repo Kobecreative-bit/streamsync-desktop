@@ -27,9 +27,6 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
 
   // Selected platforms — respect plan limits
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(() => {
-    // Load saved selection or default based on plan
-    const saved = window.streamSync.getSelectedPlatforms?.()
-    if (saved && saved.length <= maxPlatforms) return saved as Platform[]
     return ALL_PLATFORMS.slice(0, maxPlatforms)
   })
 
@@ -55,6 +52,23 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
   const emptyScrapeCyclesRef = useRef(0)
   const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Load saved platform selection on mount
+  useEffect(() => {
+    window.streamSync.getSelectedPlatforms?.().then((saved) => {
+      if (Array.isArray(saved) && saved.length > 0) {
+        const valid = saved.filter((p): p is Platform =>
+          ALL_PLATFORMS.includes(p as Platform)
+        )
+        if (valid.length > 0) {
+          setSelectedPlatforms(valid.slice(0, maxPlatforms))
+        }
+      }
+    }).catch(() => {
+      // Keep default selection on error
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Enforce platform limit when plan changes
   useEffect(() => {
     if (selectedPlatforms.length > maxPlatforms) {
@@ -62,16 +76,21 @@ function GoLive({ isLive, setIsLive }: GoLiveProps): JSX.Element {
     }
   }, [maxPlatforms, selectedPlatforms.length])
 
-  // Save selected platforms
+  // Save selected platforms whenever they change
   useEffect(() => {
     window.streamSync.setSelectedPlatforms?.(selectedPlatforms)
   }, [selectedPlatforms])
 
-  // Listen for RTMP status updates
+  // Listen for RTMP status updates (with cleanup)
   useEffect(() => {
-    window.streamSync.onRTMPStatusUpdate?.((statuses) => {
+    const handler = (statuses: RTMPStatus[]): void => {
       setRtmpStatuses(statuses)
-    })
+    }
+    window.streamSync.onRTMPStatusUpdate?.(handler)
+    return () => {
+      // IPC listeners accumulate — reset statuses on unmount
+      setRtmpStatuses([])
+    }
   }, [])
 
   const pinnedProduct = products.find((p) => p.pinned) || null

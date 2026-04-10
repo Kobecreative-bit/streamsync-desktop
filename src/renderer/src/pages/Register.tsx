@@ -103,16 +103,25 @@ function Register({ onNavigateToLogin }: RegisterProps): JSX.Element {
               Start your 14-day free trial
             </p>
 
-            {displayError && (
-              <div className="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/20">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-danger shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <p className="text-sm text-danger">{displayError}</p>
+            {displayError && (() => {
+              const isConfirmation = displayError.includes('confirmation link') || displayError.includes('Check your email')
+              return (
+                <div className={`mb-4 p-3 rounded-xl border ${isConfirmation ? 'bg-success/10 border-success/20' : 'bg-danger/10 border-danger/20'}`}>
+                  <div className="flex items-center gap-2">
+                    {isConfirmation ? (
+                      <svg className="w-4 h-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-danger shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    )}
+                    <p className={`text-sm ${isConfirmation ? 'text-success' : 'text-danger'}`}>{displayError}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

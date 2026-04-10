@@ -66,6 +66,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       })
       if (error) throw error
+
+      // If session is null, Supabase requires email confirmation before sign-in
+      if (!data.session) {
+        set({
+          error: 'Check your email for a confirmation link before signing in.',
+          user: null,
+          profile: null
+        })
+        return
+      }
+
       set({ user: data.user })
 
       if (data.user) {
@@ -81,6 +92,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           console.error('Failed to create profile:', profileError.message)
         }
         await get().loadProfile()
+        if (data.user) window.streamSync?.setAuditUser?.(data.user.id)
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Sign up failed'
