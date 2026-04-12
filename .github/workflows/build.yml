@@ -29,22 +29,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
-      - name: Import Code Signing Certificate
-        if: ${{ secrets.CSC_LINK != '' }}
-        run: |
-          echo "$CSC_LINK" | base64 --decode > /tmp/certificate.p12
-          security create-keychain -p "" build.keychain
-          security import /tmp/certificate.p12 -k build.keychain -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign
-          security list-keychains -s build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
-          rm /tmp/certificate.p12
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-
-      - name: Package (macOS — signed + notarized)
+      - name: Package (macOS)
         run: npx electron-builder --mac --publish never
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
