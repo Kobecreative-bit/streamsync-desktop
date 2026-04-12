@@ -86,8 +86,10 @@ function Dashboard({ onNavigate }: DashboardProps): JSX.Element {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-text-primary mb-1">Dashboard</h1>
-        <p className="text-text-secondary mb-6">Welcome back, {displayName}. Ready to go live?</p>
+        <h1 className="text-2xl font-bold tracking-tight mb-1">
+          Welcome back, <span className="gradient-text">{displayName}</span>
+        </h1>
+        <p className="text-text-secondary mb-6">Your dashboard — ready when you are.</p>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-4 mb-8">
@@ -136,7 +138,7 @@ function Dashboard({ onNavigate }: DashboardProps): JSX.Element {
         <div className="grid grid-cols-3 gap-4">
           <button
             onClick={() => onNavigate('golive')}
-            className="bg-gradient-to-br from-accent/20 to-orange-600/10 rounded-xl p-6 border border-accent/20 hover:border-accent/40 transition-all text-left"
+            className="bg-gradient-to-br from-accent/20 to-accent2/10 rounded-xl p-6 border border-accent/20 hover:border-accent/40 transition-all text-left"
           >
             <div className="w-10 h-10 rounded-lg bg-danger/15 flex items-center justify-center mb-3">
               <div className="w-3.5 h-3.5 rounded-full bg-danger" />

@@ -243,7 +243,7 @@ function Billing({
                       disabled={loading === plan.name}
                       className={`w-full py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
                         plan.highlighted
-                          ? 'bg-accent hover:bg-accent/90 text-white'
+                          ? 'bg-gradient-to-r from-accent to-accent2 hover:opacity-90 text-white'
                           : 'bg-white/5 hover:bg-white/10 text-text-primary border border-white/10'
                       }`}
                     >

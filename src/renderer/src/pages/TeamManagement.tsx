@@ -130,7 +130,7 @@ function TeamManagement({
           <button
             onClick={() => canInvite && setShowInviteModal(true)}
             disabled={!canInvite}
-            className="flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-accent to-accent2 hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -408,7 +408,7 @@ function TeamManagement({
               <button
                 onClick={handleInvite}
                 disabled={!inviteEmail.trim() || inviteLoading}
-                className="px-4 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 bg-gradient-to-r from-accent to-accent2 hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
               >
                 {inviteLoading ? 'Sending...' : 'Send Invitation'}
               </button>

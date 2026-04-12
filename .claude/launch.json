@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "streamsync-renderer",
+      "runtimeExecutable": "echo",
+      "runtimeArgs": ["already-running"],
+      "port": 5173
+    }
+  ]
+}

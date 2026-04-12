@@ -125,7 +125,7 @@ function UpgradeModal({ feature, currentPlan, requiredPlan, onClose }: UpgradeMo
             </button>
             <button
               onClick={handleUpgrade}
-              className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 text-white font-semibold text-sm rounded-lg transition-colors"
+              className="flex-1 py-2.5 px-4 bg-gradient-to-r from-accent to-accent2 hover:opacity-90 text-white font-semibold text-sm rounded-lg transition-colors"
             >
               Upgrade
             </button>

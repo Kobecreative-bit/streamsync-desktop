@@ -258,7 +258,7 @@ function ReplayPlayer({ replay, frames, onClose }: ReplayPlayerProps): JSX.Eleme
             {/* Play/Pause */}
             <button
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-accent hover:bg-accent/80 flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-gradient-to-r from-accent to-accent2 hover:opacity-90 flex items-center justify-center transition-colors"
             >
               {isPlaying ? (
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">

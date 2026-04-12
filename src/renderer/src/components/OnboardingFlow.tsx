@@ -174,7 +174,7 @@ function OnboardingFlow({ onComplete }: OnboardingFlowProps): JSX.Element {
 
 function WelcomeIllustration(): JSX.Element {
   return (
-    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#f97316] to-orange-600 flex items-center justify-center shadow-lg shadow-[#f97316]/20">
+    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-lg shadow-accent/20">
       <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
         <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
         <circle cx="12" cy="13" r="4" />

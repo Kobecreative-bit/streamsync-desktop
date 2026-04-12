@@ -43,18 +43,18 @@ function Register({ onNavigateToLogin }: RegisterProps): JSX.Element {
         <div className="relative z-10">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-12">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center shadow-lg shadow-accent/20">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center shadow-lg shadow-accent/20">
               <svg className="w-5.5 h-5.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <span className="font-bold text-2xl text-text-primary tracking-tight">StreamSync</span>
+            <span className="font-bold text-2xl tracking-tight gradient-text">StreamSync</span>
           </div>
 
           <h1 className="text-3xl font-bold text-text-primary leading-tight mb-4">
             Go live everywhere.<br />
-            <span className="text-accent">Sell smarter.</span>
+            <span className="gradient-text">Sell smarter.</span>
           </h1>
           <p className="text-text-secondary text-base leading-relaxed max-w-md mb-10">
             Stream to TikTok, YouTube, Instagram, and Facebook simultaneously with AI-powered selling tools. Keep 100% of your sales — no commissions, ever.
@@ -86,13 +86,13 @@ function Register({ onNavigateToLogin }: RegisterProps): JSX.Element {
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="flex items-center justify-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <span className="font-bold text-2xl text-text-primary tracking-tight">StreamSync</span>
+            <span className="font-bold text-2xl tracking-tight gradient-text">StreamSync</span>
           </div>
 
           <div className="bg-bg-card rounded-2xl border border-white/[0.06] p-8 shadow-2xl shadow-black/20">
@@ -187,7 +187,7 @@ function Register({ onNavigateToLogin }: RegisterProps): JSX.Element {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 mt-2"
+                className="w-full py-3 px-4 bg-gradient-to-r from-accent to-accent2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 mt-2"
               >
                 {loading ? (
                   <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">

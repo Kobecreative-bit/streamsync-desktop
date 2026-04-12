@@ -124,7 +124,7 @@ function StreamControls({
         ) : (
           <button
             onClick={onGoLive}
-            className="px-7 py-2 bg-accent rounded-lg text-white text-sm font-bold hover:bg-accent/90 transition-all flex items-center gap-2 shadow-lg shadow-accent/25"
+            className="px-7 py-2 bg-gradient-to-r from-accent to-accent2 rounded-lg text-white text-sm font-bold hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-accent/25"
           >
             <div className="w-3 h-3 rounded-full bg-white/90" />
             Go Live

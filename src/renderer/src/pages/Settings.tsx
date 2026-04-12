@@ -93,7 +93,7 @@ function Settings(): JSX.Element {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-sm">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-white font-bold text-sm">
                         {(profile?.display_name || 'U').charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -124,7 +124,7 @@ function Settings(): JSX.Element {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-orange-600 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-white font-bold text-lg">
                         {(profileForm.display_name || 'U').charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -162,7 +162,7 @@ function Settings(): JSX.Element {
                     <button
                       onClick={handleSaveProfile}
                       disabled={profileSaving}
-                      className="px-4 py-1.5 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors disabled:opacity-50"
+                      className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-accent to-accent2 hover:opacity-90 rounded-lg transition-colors disabled:opacity-50"
                     >
                       {profileSaving ? 'Saving...' : 'Save'}
                     </button>
@@ -641,7 +641,7 @@ function RTMPSettings(): JSX.Element {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="mt-3 px-5 py-2 text-xs font-semibold text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors disabled:opacity-50"
+        className="mt-3 px-5 py-2 text-xs font-semibold text-white bg-gradient-to-r from-accent to-accent2 hover:opacity-90 rounded-lg transition-colors disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Save Settings'}
       </button>
