@@ -52,11 +52,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: M9H6HL2KVN
-          # electron-builder reads this env var to trigger notarization
-          # Only notarizes when APPLE_ID is present (i.e. in CI with secrets set)
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Explicitly skip if no credentials — prevents ad-hoc fallback overwriting signed build
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.CSC_LINK != '' && 'true' || 'false' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
