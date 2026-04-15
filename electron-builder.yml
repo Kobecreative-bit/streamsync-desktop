@@ -14,6 +14,9 @@ mac:
   entitlementsInherit: resources/entitlements.mac.plist
   notarize: true
   artifactName: StreamSync-${arch}.${ext}
+  extendInfo:
+    NSCameraUsageDescription: StreamSync needs camera access so you can go live on TikTok, YouTube, Instagram, and Facebook.
+    NSMicrophoneUsageDescription: StreamSync needs microphone access so viewers can hear you during your live streams.
   target:
     - target: dmg
       arch: [x64, arm64]

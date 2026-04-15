@@ -100,6 +100,60 @@ function createWindow(): void {
   }
 }
 
+// Grant camera, mic, and media permissions to all sessions (default + platform partitions)
+function setupMediaPermissions(): void {
+  const PLATFORM_PARTITIONS = [
+    'persist:tiktok',
+    'persist:youtube',
+    'persist:instagram',
+    'persist:facebook'
+  ]
+
+  const applyPermissions = (ses: Electron.Session): void => {
+    // Allow all permission requests from webviews (camera, mic, display capture, etc.)
+    ses.setPermissionRequestHandler((_webContents, permission, callback) => {
+      const granted = [
+        'media',
+        'camera',
+        'microphone',
+        'display-capture',
+        'mediaKeySystem',
+        'geolocation',
+        'notifications',
+        'fullscreen',
+        'openExternal',
+        'pointerLock',
+        'clipboard-read',
+        'clipboard-sanitized-write'
+      ]
+      callback(granted.includes(permission))
+    })
+
+    // Allow device permission checks (camera/mic enumeration)
+    ses.setDevicePermissionHandler(() => true)
+
+    // Remove headers that block camera/mic in iframes inside webviews
+    ses.webRequest.onHeadersReceived((details, callback) => {
+      const headers = { ...details.responseHeaders }
+      // Remove Permissions-Policy that blocks camera/mic
+      delete headers['permissions-policy']
+      delete headers['Permissions-Policy']
+      // Remove X-Frame-Options that blocks embedding
+      delete headers['x-frame-options']
+      delete headers['X-Frame-Options']
+      callback({ responseHeaders: headers })
+    })
+  }
+
+  // Apply to the main app session
+  applyPermissions(session.defaultSession)
+
+  // Apply to each platform webview partition
+  for (const partition of PLATFORM_PARTITIONS) {
+    applyPermissions(session.fromPartition(partition))
+  }
+}
+
 function setupCSP(): void {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -488,6 +542,7 @@ function setupIPC(): void {
 }
 
 app.whenReady().then(() => {
+  setupMediaPermissions() // must be before createWindow so partitions exist
   setupCSP()
   setupMenu()
   setupIPC()
