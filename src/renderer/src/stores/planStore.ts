@@ -12,7 +12,7 @@ interface PlanState {
 }
 
 export const usePlanStore = create<PlanState>((set, get) => ({
-  plan: 'starter',
+  plan: 'pro', // EARLY ACCESS: show Pro badge for all beta users
 
   canAccess: (feature: string): boolean => {
     return canAccess(get().plan, feature)

@@ -89,7 +89,12 @@ export const PLAN_FEATURES: Record<PlanTier, PlanConfig> = {
   }
 }
 
+// EARLY ACCESS MODE — all features unlocked for soft launch beta users
+// To re-enable plan gating: set EARLY_ACCESS to false
+const EARLY_ACCESS = true
+
 export function canAccess(plan: PlanTier, feature: string): boolean {
+  if (EARLY_ACCESS) return true
   const config = PLAN_FEATURES[plan]
   if (!config) return false
   const value = config.features[feature]
@@ -100,6 +105,7 @@ export function canAccess(plan: PlanTier, feature: string): boolean {
 }
 
 export function getFeatureLimit(plan: PlanTier, feature: string): number {
+  if (EARLY_ACCESS) return PLAN_FEATURES['enterprise'].features[feature] as number ?? Infinity
   const config = PLAN_FEATURES[plan]
   if (!config) return 0
   const value = config.features[feature]
